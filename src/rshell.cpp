@@ -46,7 +46,7 @@ int main()
 				cnntr.clear();
 				cmd.clear();
 			}
-			if(*it=="|")
+			else if(*it=="|")
 			{
 				cnntr+=(*it);
 				++it;
@@ -64,16 +64,28 @@ int main()
 				cnntr.clear();
 				cmd.clear();
 			}
-			if(*it==";")
+			else if(*it==";")
 			{
-				//just push onto vector, two ;; = do nothing for now 
+				cnntr+=(*it);
+				++it;
+				if(*it==";")
+				{
+					cout << "Invalid connector\n"; //later replace w/func
+				}
+				else 
+				{
+					cmdvect.push_back(cmd);
+					cmdvect.push_back(cnntr);
+				}
+				cmd.clear();
+				cnntr.clear();
 			}
-
-
-			cmd+=(*it);
-
+		
+			else{ cmd+=(*it); }
 
 		}
+
+		cmdvect.push_back(cmd); //adds last of input
 		
 		for(unsigned i=0;i<cmdvect.size();++i)
 		{
