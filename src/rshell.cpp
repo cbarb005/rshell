@@ -32,7 +32,7 @@ int main()
 		for(toknizer::iterator it=parser.begin();it!=parser.end();++it)
 		{
 		//cout << "it: "<< *it << endl;
-			if(*it=="exit")	{ exit(0);} //exits program
+			//if(*it=="exit")	{ exit(0);}
 			if(*it=="#") { break; } //finish reading input if comment
 			if(*it=="&" || *it=="|" || *it==";")
 			{
@@ -58,17 +58,25 @@ int main()
 					cmdvect.push_back(cnntr);
 					cmd+=(*it);
 					cnntr.clear();
+					//"empties" connector and resumes building command
 				}
-				else
+				else //otherwise, just keep building command
 				{
 					cmd+=(*it);
+					cmd+=" "; //spaces out commands like "ls -a"
 				}
 			}
 
 		}
-		
-		cmdvect.push_back(cmd); //adds last of input
-		
+		if(!cmd.empty())
+		{
+			cmdvect.push_back(cmd); //adds last of input
+		}
+		if(cnntr==";")
+		{
+			cmdvect.push_back(cnntr);//and trailing ; connectors
+		}
+
 		cout << "---------------------------------" << endl;
 		for(unsigned i=0;i<cmdvect.size();++i)
 		{
