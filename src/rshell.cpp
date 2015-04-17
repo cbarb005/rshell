@@ -9,6 +9,8 @@
 using namespace std;
 using namespace boost;
 
+bool validConnector(string);
+
 typedef tokenizer<char_separator<char> > toknizer;
 int main()
 {
@@ -29,75 +31,58 @@ int main()
 
 		for(toknizer::iterator it=parser.begin();it!=parser.end();++it)
 		{
+		//cout << "it: "<< *it << endl;
 			if(*it=="exit")	{ exit(0);} //exits program
 			if(*it=="#") { break; } //finish reading input if comment
-			if(*it=="&")
+			if(*it=="&" || *it=="|" || *it==";")
 			{
-				cnntr+=(*it);
-				++it; //goes to next to see if valid &&
-				if(*it=="&")
+				if(!cmd.empty())
 				{
 					cmdvect.push_back(cmd);
+					cmd.clear();
 					cnntr+=(*it);
-					cmdvect.push_back(cnntr);
 				}
-				else { cout << "Invalid connector\n"; }
-				//empty out cnntr for next time
-				cnntr.clear();
-				cmd.clear();
-			}
-			else if(*it=="|")
-			{
-				cnntr+=(*it);
-				++it;
-				if(*it=="|")
+				else if(cmd.empty() && !cnntr.empty())
 				{
-					cmdvect.push_back(cmd);
 					cnntr+=(*it);
+				}
+				//empty out cnntr for next time
+				//cnntr.clear();
+				//cmd.clear();
+			}
+			//if none of cases above apply, can be assumed to be command
+			else
+			{ 
+				if(!cnntr.empty())
+				{
 					cmdvect.push_back(cnntr);
+					cmd+=(*it);
+					cnntr.clear();
 				}
 				else
 				{
-					cmdvect.push_back(cmd);
-					cmdvect.push_back(cnntr);
+					cmd+=(*it);
 				}
-				cnntr.clear();
-				cmd.clear();
 			}
-			else if(*it==";")
-			{
-				cnntr+=(*it);
-				++it;
-				if(*it==";")
-				{
-					cout << "Invalid connector\n"; //later replace w/func
-				}
-				else 
-				{
-					cmdvect.push_back(cmd);
-					cmdvect.push_back(cnntr);
-				}
-				cmd.clear();
-				cnntr.clear();
-			}
-		
-			else{ cmd+=(*it); }
 
 		}
-
+		
 		cmdvect.push_back(cmd); //adds last of input
 		
+		cout << "---------------------------------" << endl;
 		for(unsigned i=0;i<cmdvect.size();++i)
 		{
 			cout << cmdvect.at(i) << endl;
 		}
+		cout << "---------------------------------" << endl;
 		//if exit command is found, exit shell
 		//fork based on commands and connectors, then use execvp
 		//once child processes succeed or fail, return to parent
 		//print out newline and clear buffer?
 
 	}
-
+	//end of while loop
+	
 	return 0;
 }
 
