@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <unistd.h>
+#include <stdio.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -92,21 +93,63 @@ int main()
 
 void executor(vector<string> &vect)
 {
+	bool success=false;
+
 	for(unsigned i=0;i<vect.size();++i)
 	{
-		if(isConnector(vect.at(i))
+		if(isConnector(vect.at(i)))
 		{
 			if(vect.at(i)=="&&")
 			{ 
-				//continue or not based on success of last command
+				if(success==false)
+				{
+					cout << "first argument failed\n";
+					return;
+				}
+				else
+				{
+					continue;
+				}
 			}
 			if(vect.at(i)=="||")
 			{
-				//same as above
+				if(success==false && i!=0)
+				{	
+					cout << "first argument failed, trying second\n";
+					continue;
+				}
+				else if(success==true)
+				{
+					return;
+				}
+
 			}
 		}
 		//otherwise, fork and attempt to execute using execvp
 		//should it fail, set success to false
+		pid_t pid=fork();
+		if(pid==-1) //error with fork
+		{
+			perror("fork");
+			exit(1);
+		}
+		else if(pid==0) //child
+		{
+			
+			cout << "execution here!!!\n";
+			_exit(0);
+		}
+		else //parent
+		{	
+			if(wait(0)==-1)
+			{
+				perror("wait");
+				exit(1);
+			}
+			
+			//if command executes correctly, success set to true
+			//then continue with reading through vect
+		}
 
 	}
 	return;
