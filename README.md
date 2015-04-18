@@ -4,4 +4,4 @@ This is a very, very basic unix-shell, like bash, but less functional for now.
 
 
 ##Bug Tracker (updated)
-When parsing, mystery connector appears, probably due to not clearing out the command string.
+When parsing, commands starting or ending with a connector besides ; are notallowed.
