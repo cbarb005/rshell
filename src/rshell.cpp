@@ -92,7 +92,25 @@ int main()
 
 void executor(vector<string> &vect)
 {
-return;}
+	for(unsigned i=0;i<vect.size();++i)
+	{
+		if(isConnector(vect.at(i))
+		{
+			if(vect.at(i)=="&&")
+			{ 
+				//continue or not based on success of last command
+			}
+			if(vect.at(i)=="||")
+			{
+				//same as above
+			}
+		}
+		//otherwise, fork and attempt to execute using execvp
+		//should it fail, set success to false
+
+	}
+	return;
+}
 
 int syntaxCheck(vector<string> &vect)
 {
