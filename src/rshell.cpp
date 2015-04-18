@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
+#include <string>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
@@ -9,7 +11,9 @@
 using namespace std;
 using namespace boost;
 
-bool validConnector(string);
+bool isConnector(string&);
+bool validConnector(string&);
+void executor(vector<string> &vect);
 
 typedef tokenizer<char_separator<char> > toknizer;
 int main()
@@ -77,21 +81,46 @@ int main()
 			cmdvect.push_back(cnntr);//and trailing ; connectors
 		}
 
-		cout << "---------------------------------" << endl;
-		for(unsigned i=0;i<cmdvect.size();++i)
-		{
-			cout << cmdvect.at(i) << endl;
-		}
-		cout << "---------------------------------" << endl;
-		//if exit command is found, exit shell
-		//fork based on commands and connectors, then use execvp
-		//once child processes succeed or fail, return to parent
-		//print out newline and clear buffer?
-
+		executor(cmdvect); //pass in parsed command to be executed (or not)
 	}
 	//end of while loop
 	
 	return 0;
 }
 
+void executor(vector<string> &vect)
+{
+	//bool success; //used in long compound statements
+	for(unsigned i=0; i<vect.size();++i)
+	{
+		if(isConnector(vect.at(i)) && validConnector(vect.at(i)))
+		{
+			cout << vect.at(i) << "is connector" << endl;
+		}
+	}
 
+
+	return;
+}
+
+bool isConnector(string &s)
+{
+	//function just checks if token is supposed to be a connector
+	size_t i=s.find("&");
+	size_t j=s.find("|");
+	size_t k=s.find(";");
+
+	if(i==string::npos && j==string::npos && k==string::npos)
+	{
+		return false;
+	}
+	return true;
+}
+
+bool validConnector(string &str)
+{
+	if(str=="&&") { return true; }
+	else if(str=="||") { return true;}
+	else if(str==";") { return true;}
+	return false;
+}
