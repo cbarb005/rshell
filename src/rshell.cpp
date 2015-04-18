@@ -11,6 +11,7 @@
 using namespace std;
 using namespace boost;
 
+int syntaxCheck(vector<string>&vect);
 bool isConnector(string&);
 bool validConnector(string&);
 void executor(vector<string> &vect);
@@ -35,7 +36,6 @@ int main()
 
 		for(toknizer::iterator it=parser.begin();it!=parser.end();++it)
 		{
-		//cout << "it: "<< *it << endl;
 			//if(*it=="exit")	{ exit(0);}
 			if(*it=="#") { break; } //finish reading input if comment
 			if(*it=="&" || *it=="|" || *it==";")
@@ -50,9 +50,6 @@ int main()
 				{
 					cnntr+=(*it);
 				}
-				//empty out cnntr for next time
-				//cnntr.clear();
-				//cmd.clear();
 			}
 			//if none of cases above apply, can be assumed to be command
 			else
@@ -71,17 +68,22 @@ int main()
 				}
 			}
 
-		}
+		} //end tokenizer loop
+
 		if(!cmd.empty())
 		{
 			cmdvect.push_back(cmd); //adds last of input
 		}
-		if(cnntr==";")
+		if(!cnntr.empty())
 		{
 			cmdvect.push_back(cnntr);//and trailing ; connectors
 		}
 
-		executor(cmdvect); //pass in parsed command to be executed (or not)
+		int x=syntaxCheck(cmdvect);
+		if(x==0)
+		{
+			executor(cmdvect); //pass in parsed command to be executed 
+		}
 	}
 	//end of while loop
 	
@@ -90,17 +92,29 @@ int main()
 
 void executor(vector<string> &vect)
 {
-	//bool success; //used in long compound statements
+return;}
+
+int syntaxCheck(vector<string> &vect)
+{
+	//checks input for invalid syntax in connectors
 	for(unsigned i=0; i<vect.size();++i)
 	{
-		if(isConnector(vect.at(i)) && validConnector(vect.at(i)))
+		if(isConnector(vect.at(i))) 
 		{
-			cout << vect.at(i) << "is connector" << endl;
+			//ensures argument for && and || is complete
+			if((i==0 || i+1==vect.size()) && vect.at(i)!=";")
+			{
+				cout << "Connector syntax error: missing argument\n";
+				return -1; 
+			}
+			if(!validConnector(vect.at(i)))
+			{
+				cout << "Connector syntax error: invalid connector\n";
+				return -1;
+			}
 		}
 	}
-
-
-	return;
+	return 0; //no syntax errors found
 }
 
 bool isConnector(string &s)
@@ -119,6 +133,7 @@ bool isConnector(string &s)
 
 bool validConnector(string &str)
 {
+	//only supports few connectors now
 	if(str=="&&") { return true; }
 	else if(str=="||") { return true;}
 	else if(str==";") { return true;}
