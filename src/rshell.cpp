@@ -16,6 +16,7 @@ int syntaxCheck(vector<string>&vect);
 bool isConnector(string&);
 bool validConnector(string&);
 void executor(vector<string> &vect);
+void commandParser(vector<string> &v, string str);
 
 typedef tokenizer<char_separator<char> > toknizer;
 int main()
@@ -89,7 +90,7 @@ int main()
 	//end of while loop
 	
 	return 0;
-}
+} //end of main
 
 void executor(vector<string> &vect)
 {
@@ -126,7 +127,6 @@ void executor(vector<string> &vect)
 			}
 		}
 		//otherwise, fork and attempt to execute using execvp
-		//should it fail, set success to false
 		pid_t pid=fork();
 		if(pid==-1) //error with fork
 		{
@@ -135,8 +135,12 @@ void executor(vector<string> &vect)
 		}
 		else if(pid==0) //child
 		{
-			
-			cout << "execution here!!!\n";
+			//parse vect.at(i) into smaller vector v
+			vector<string> v;
+			commandParser(v,vect.at(i));
+
+			//char *argv[256]=vect.at(i).c_str();
+
 			_exit(0);
 		}
 		else //parent
@@ -152,6 +156,20 @@ void executor(vector<string> &vect)
 		}
 
 	}
+	return;
+}
+
+void commandParser(vector<string> &v, string str)
+{
+	char_separator<char> delim(" ");
+	toknizer parser(str,delim);
+	for(toknizer::iterator it=parser.begin();it!=parser.end();++it)
+	{
+		cout << *it << endl;
+	}
+
+	
+	//stuff
 	return;
 }
 
