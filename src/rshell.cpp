@@ -78,11 +78,11 @@ int main()
 		}
 		if(!cnntr.empty())
 		{
-			cmdvect.push_back(cnntr);//and trailing ; connectors
+			cmdvect.push_back(cnntr);//and trailing connectors
 		}
 
 		int x=syntaxCheck(cmdvect);
-		if(x==0)
+		if(x==0) //only executes if no errors with connector usage
 		{
 			executor(cmdvect); //pass in parsed command to be executed 
 		}
@@ -98,7 +98,12 @@ void executor(vector<string> &vect)
 
 	for(unsigned i=0;i<vect.size();++i)
 	{
-		if(isConnector(vect.at(i)))
+		if(vect.at(i)=="exit")
+		{
+	
+		}
+		//checks if current string is connector
+		else if(isConnector(vect.at(i)))
 		{
 			if(vect.at(i)=="&&")
 			{ 
@@ -107,10 +112,7 @@ void executor(vector<string> &vect)
 					cout << "first argument failed\n";
 					return;
 				}
-				else
-				{
-					continue;
-				}
+				else	{ continue;	}
 			}
 			if(vect.at(i)=="||")
 			{
@@ -119,14 +121,36 @@ void executor(vector<string> &vect)
 					cout << "first argument failed, trying second\n";
 					continue;
 				}
-				else if(success==true)
-				{
-					return;
-				}
-
+				else if(success==true)	{ return; }
+			}
+			if(vect.at(i)==";")
+			{
+				continue;
 			}
 		}
-		//otherwise, fork and attempt to execute using execvp
+		//otherwise can be assumed to be a command
+
+		//parse vect.at(i) into smaller vector
+		vector<string>argvect;
+		commandParser(argvect,vect.at(i));
+
+		//store vector size for array allocation
+		const size_t sz=argvect.size();
+		char**argv=new char*[sz+1]; //REMEMBER- delete at end
+		
+		for(unsigned j=0;j<sz+1;++j)
+		{
+			if(j<sz)//using strdup since it dynamically allocates on its own
+			{
+				argv[j]=strdup(argvect.at(j).c_str()); 
+			}
+			else if(j==sz) //adds null at end
+			{
+				argv[j]=NULL;
+			}
+		}
+		
+		//fork and attempt to execute using execvp
 		pid_t pid=fork();
 		if(pid==-1) //error with fork
 		{
@@ -135,12 +159,14 @@ void executor(vector<string> &vect)
 		}
 		else if(pid==0) //child
 		{
-			//parse vect.at(i) into smaller vector v
-			vector<string> v;
-			commandParser(v,vect.at(i));
 
-			//char *argv[256]=vect.at(i).c_str();
-
+			if(execvp(argv[0],argv)==-1)
+			{
+				success=false;  //redundant maybe?
+				perror("execvp");
+				exit(1);
+			}
+			
 			_exit(0);
 		}
 		else //parent
@@ -150,11 +176,15 @@ void executor(vector<string> &vect)
 				perror("wait");
 				exit(1);
 			}
-			
-			//if command executes correctly, success set to true
-			//then continue with reading through vect
+			success=true;
 		}
-
+		
+		//deallocates argv as well as strdup's dynamic memory
+		for(unsigned i=0;i<sz+1;++i)
+		{
+			delete [] argv[i];
+		}
+		delete [] argv;
 	}
 	return;
 }
@@ -165,11 +195,13 @@ void commandParser(vector<string> &v, string str)
 	toknizer parser(str,delim);
 	for(toknizer::iterator it=parser.begin();it!=parser.end();++it)
 	{
-		cout << *it << endl;
+		if(*it=="exit")
+		{
+			exit(0);
+		}
+		v.push_back(*it);
 	}
 
-	
-	//stuff
 	return;
 }
 
