@@ -1,0 +1,106 @@
+Script started on Sun 19 Apr 2015 11:49:53 PM PDT
+~
+cbarb005@hammer $ cd CS[K[K[K[K[Kcs100
+[0;91m
+===============================================================================
+|                                                                             |
+| You have enabled settings specific for cs100.  Everything you do is being   |
+| recorded to measure your progress in the class.                             |
+|                                                                             |
+| Important commands for the class:                                           |
+|   * calcgrade.sh          displays a detailed breakdown of your grade       |
+|   * typespeed             practice typing unix commands                     |
+|                                                                             |
+| Important commands for general C++ programming:                             |
+|   * make                  don't call g++ manually; let make do the work!    |
+|   * gdb                   the GNU debugger                                  |
+|   * valgrind              get rid of your memory leaks                      |
+|   * cppcheck              static analysis tool                              |
+|   * man                   find help about any syscall / terminal command    |
+|                                                                             |
+===============================================================================
+[0m
+[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~[0;95m [0;36m$[0m cd CS100/
+[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100[0;95m [0;36m$[0m cd rshell/
+[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell[0;95m (exec) [0;36m$[0m cd src
+[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell/src[0;95m (exec) [0;36m$[0m cd [K[K[K./a.out
+$ ls
+a.out  exec.script  rshell.cpp
+$ #sorry, had to go         had to                ls -a
+.  ..  a.out  exec.script  rshell.cpp
+$ lsa  0 -s a  ; pwd
+.  ..  a.out  exec.script  rshell.cpp
+/class/classes/cbarb005/CS100/rshell/src
+$ ls -a && pwd || echo hello; mkdir x
+.  ..  a.out  exec.script  rshell.cpp
+/class/classes/cbarb005/CS100/rshell/src
+$ ls
+a.out  exec.script  rshell.cpp
+$ ls    ls &&&&&&&&&&&&&&&&& pwd
+Connector syntax error: invalid connector
+$ ls    ls &&     echo hello &&
+Connector syntax error: missing argument
+$ echo hello || echoo  goodbye 
+hello
+$ hell    echo  o hello ||        good morning || echo c good night
+execvp: No such file or directory
+$ #bug as  as mentioned in  README, doesn't seem to care                      
+$ ls  ; ls -a; pwd   && echo !!!!! ; fjefljelfjlejfljeflllllllllllllllllllllllllllllllljjlflllllllll;
+a.out  exec.script  rshell.cpp
+.  ..  a.out  exec.script  rshell.cpp
+/class/classes/cbarb005/CS100/rshell/src
+!!!!!
+execvp: No such file or directory
+$ ls && && && && pwd
+a.out  exec.script  rshell.cpp
+/class/classes/cbarb005/CS100/rshell/src
+$ #maybe a bug, I classified as such under README, but more or less couldn't                                                                       another bug
+$ ls pwd
+ls: cannot access pwd: No such file or directory
+$ # ls p    pwd echo hello ls
+pwd: ignoring non-option arguments
+/class/classes/cbarb005/CS100/rshell/src
+$ #e  #error-       ls -t -a -l
+total 60
+drwx------ 2 cbarb005 classes  4096 Apr 19 23:44 .
+-rw------- 1 cbarb005 classes     0 Apr 19 23:44 exec.script
+-rwx------ 1 cbarb005 classes 41800 Apr 19 23:38 a.out
+-rw------- 1 cbarb005 classes  4875 Apr 19 23:38 rshell.cpp
+drwx------ 5 cbarb005 classes  4096 Apr 19 23:27 ..
+$ git status      log
+[?1h=[33mcommit 9316e27a97b6bfd6e2f7c21a4a261bce80962a94[m[m
+Author: Clarisa Barba <cbarb005@ucr.edu>[m
+Date:   Sun Apr 19 23:45:23 2015 -0700[m
+[m
+    cout updated to cerr[m
+[m
+[33mcommit 59ac39ec80e1adb1502a3561030bd2f9cb74a16f[m[m
+Author: Clarisa Barba <cbarb005@ucr.edu>[m
+Date:   Sun Apr 19 23:34:53 2015 -0700[m
+[m
+    sorta-final version, still buggy.[m
+[m
+[33mcommit 6b46d97f057e5616a20f973dfa9947d6d3dd4cd2[m[m
+Author: Clarisa Barba <cbarb005@ucr.edu>[m
+Date:   Sun Apr 19 23:33:22 2015 -0700[m
+[m
+    Bug update to README[m
+[m
+[33mcommit 2fe6d5ad0bf5c831e58580933e7404d8a89b6d5c[m[m
+Author: Clarisa Barba <cbarb005@ucr.edu>[m
+Date:   Sun Apr 19 23:18:41 2015 -0700[m
+[m
+    updated README[m
+[m
+:[K[K[?1l>$ #sorry about           exit       ls  ; pwd;          echo hello; echo world; #exit
+hello
+world
+$ #exiting for real now
+$ exit
+[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell/src[0;95m (exec) [0;36m$[0m exit
+exit
+~
+cbarb005@hammer $ exit
+exit
+
+Script done on Sun 19 Apr 2015 11:58:09 PM PDT
