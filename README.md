@@ -1,17 +1,20 @@
 #rshell
 
 This is a very, very basic unix-shell, like bash, but less functional for now.
-It is worth noting that when stringing commands together, there is no inherent "order of operations"; commands connected by `&&` only rely on whether the previous argument succeeded or not, while `||` relies on its failure. 
+It can almost execute everything bash does, as long as it is already a ```/bin/``` executable, along with a built-in ```exit``` command. 
+
+Compound commands are supported, but only with the ```&&```,```||```, and ```;``` connectors.
+It is worth noting that when stringing commands together, there is no inherent "order of operations"; commands connected by ```&&``` only rely on whether the previous argument succeeded or not, while ```||``` relies on its failure. 
 
 
 ##Installation
-
-`git clone https://github.com/cbarb005/rshell.git
+```
+git clone https://github.com/cbarb005/rshell.git
 cd rshell
 git checkout hw0
 make
-bin/rshell`
-
+bin/rshell
+```
 
 ##Bugs
 
@@ -22,6 +25,5 @@ Sometimes, a phantom empty line appears after executing a command. So far, this 
 
 
 If not a valid command, `perror` will return a message, but continue, even in a compound statement like `ls && pwdd && echo hello` and echo anyways.
-
 
 
