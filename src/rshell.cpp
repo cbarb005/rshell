@@ -33,12 +33,11 @@ int main()
 		string cnntr=""; //will hold connector
 		vector<string> cmdvect;
 
-		char_separator<char> delim(" ","&|#;");
+		char_separator<char> delim("","&|#;");
 		toknizer parser(userinput,delim);
 
 		for(toknizer::iterator it=parser.begin();it!=parser.end();++it)
 		{
-			//if(*it=="exit")	{ exit(0);}
 			if(*it=="#") { break; } //finish reading input if comment
 			if(*it=="&" || *it=="|" || *it==";")
 			{
@@ -82,9 +81,9 @@ int main()
 		}
 
 		int x=syntaxCheck(cmdvect);
-		if(x==0) //only executes if no errors with connector usage
+		if(x==0)
 		{
-			executor(cmdvect); //pass in parsed command to be executed 
+			executor(cmdvect);
 		}
 	}
 	//end of while loop
@@ -100,7 +99,7 @@ void executor(vector<string> &vect)
 	{
 		if(vect.at(i)=="exit")
 		{
-	
+			cout << "is exit" << endl;
 		}
 		//checks if current string is connector
 		else if(isConnector(vect.at(i)))
