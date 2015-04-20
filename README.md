@@ -25,5 +25,5 @@ Sometimes, a phantom empty line appears after executing a command. So far, this 
 
 
 If not a valid command, `perror` will return a message, but continue, even in a compound statement like `ls && pwdd && echo hello` and echo anyways.
-
+Similarly, a statement like ```pwd && && && && && && ls``` will also run both anyways, despite the missing arguments in between. Technically, doing nothing would easily succeed anyways, but if the expectation is that it would not run, then yes, it is a bug. 
 
