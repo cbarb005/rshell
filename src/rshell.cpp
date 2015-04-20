@@ -94,6 +94,7 @@ int main()
 void executor(vector<string> &vect)
 {
 	bool success=false;
+	bool preArg=false;
 
 	for(unsigned i=0;i<vect.size();++i)
 	{
@@ -106,29 +107,31 @@ void executor(vector<string> &vect)
 		{
 			if(vect.at(i)=="&&")
 			{ 
-				if(success==false)
+				if(success==false || i==0 || preArg==false)
 				{
-					cout << "first argument failed\n";
 					return;
 				}
-				else	{ continue;	}
+				else	{ preArg=false;  continue;	}
 			}
 			if(vect.at(i)=="||")
 			{
 				if(success==false && i!=0)
 				{	
-					cout << "first argument failed, trying second\n";
 					continue;
 				}
-				else if(success==true)	{ return; }
+				else if(success==true || i==0 || preArg==false)	{ return; }
 			}
-			if(vect.at(i)==";")
+			if(vect.at(i)==";" && i!=0)
 			{
 				continue;
 			}
 		}
+		else
+		{
+			preArg=true;
+		}
 		//otherwise can be assumed to be a command
-
+		
 		//parse vect.at(i) into smaller vector
 		vector<string>argvect;
 		commandParser(argvect,vect.at(i));
