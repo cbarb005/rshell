@@ -217,12 +217,12 @@ int syntaxCheck(vector<string> &vect)
 			//ensures argument for && and || is complete
 			if((i==0 || i+1==vect.size()) && vect.at(i)!=";")
 			{
-				cout << "Connector syntax error: missing argument\n";
+				cerr << "Connector syntax error: missing argument\n";
 				return -1; 
 			}
 			if(!validConnector(vect.at(i)))
 			{
-				cout << "Connector syntax error: invalid connector\n";
+				cerr << "Connector syntax error: invalid connector\n";
 				return -1;
 			}
 		}
