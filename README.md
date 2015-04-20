@@ -21,6 +21,7 @@ When incorrectly entering an argument such as `|| pwd`, the program will ignore 
 Sometimes, a phantom empty line appears after executing a command. So far, this only seems to happen with compound commands, and not consistently.
 
 
-Compound commands ending with `;` do not execute the last command; `ls ; pwd;` only executes ls, before perror returns with an error message from execvp.
+If not a valid command, `perror` will return a message, but continue, even in a compound statement like `ls && pwdd && echo hello` and echo anyways.
+
 
 
