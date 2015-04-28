@@ -3,11 +3,12 @@
 VPATH = src
 FLAGS = -Wall -Werror -ansi -pedantic
 
-all: bin  rshell 
+all: bin  rshell cp
 
 rshell: bin 
 	g++  $(FLAGS) src/rshell.cpp  -o  ./bin/rshell  
-
+cp: 
+	g++ $(FLAGS) src/cp.cpp -o ./bin/cp
 bin:
 	[ ! -d bin ] && mkdir bin
 
