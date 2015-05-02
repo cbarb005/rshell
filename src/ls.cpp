@@ -9,18 +9,20 @@
 #include <fcntl.h>
 #include <string.h>
 #include <string>
+#include <algorithm>
 #include <vector>
 #include <queue>
 #include <set>
-
+#include <ios>
+#include <iomanip>
 
 using namespace std;
 
-void all( );
-void list( );
-void recursive();
 void dirStream(set<char>&,char*);
+void formatNormal(vector<char*> &);
+void formatLong(vector<char*> &);
 void setflags(set<char>&,bool&,bool&,bool&);
+int longestName(vector<char*>&,int&);
 int flagID(char*,set<char>&);
 bool isDot(char*); //specifically for ./ or ../
 bool isHiddenFile(char*); //any hidden file
@@ -79,6 +81,7 @@ void dirStream(set<char> &flagSet,char* dirc)
 	bool a,l,R;
 	setflags(flagSet,a,l,R); //"activates" bools based on if flag is in set
 	queue<char*> dirq;
+	vector<char*> output;
 
 	if(R)
 	{
@@ -87,6 +90,7 @@ void dirStream(set<char> &flagSet,char* dirc)
 	if((dirptr=opendir(dirc))==NULL)
 	{
 		perror("opendir");
+		;
 	}
 	errno=0;
 	while(NULL != (info=readdir(dirptr)))
@@ -94,7 +98,7 @@ void dirStream(set<char> &flagSet,char* dirc)
 		if(isHiddenFile(info->d_name) && !a)
 		{ continue; } //skip over dot files
 
-		cout << info->d_name << " ";
+		output.push_back(info->d_name);	
 
 		if(R && info->d_type==DT_DIR && !isDot(info->d_name))
 		{	
@@ -102,8 +106,8 @@ void dirStream(set<char> &flagSet,char* dirc)
 			dirq.push(info->d_name);
 		}
 	}
-	cout << endl; 
-
+	if(!l) { formatNormal(output); } //if no -l passed in
+	else { formatLong(output); }
 	if(errno != 0)
 	{
 		perror("readdir");
@@ -120,7 +124,88 @@ void dirStream(set<char> &flagSet,char* dirc)
 	}
 	return;
 }
+void formatLong(vector<char*> &v)
+{
+	int sum=0;
+	int width = longestName(v,sum);
+	for(unsigned i=0;i<v.size();++i)
+	{
+		struct stat buf;
+		if(-1==(stat(v.at(i),&buf)))
+		{
+			perror("stat");
+		}
+		if(buf.st_mode & S_IFDIR) { cout << "d"; }
+		else if(buf.st_mode & S_IFLNK) {cout << "l"; }
+		else /*if(buf.st_mode & S_IFREG)*/ {cout << "-";}
+		
+		//permissions
+		cout <<
+		((S_IRUSR & buf.st_mode) ? "r" : "-") <<
+		((S_IWUSR & buf.st_mode) ? "w" : "-") << 
+		((S_IXUSR & buf.st_mode) ? "x" : "-") <<
+		((S_IRGRP & buf.st_mode) ? "r" : "-") <<
+		((S_IWGRP & buf.st_mode) ? "w" : "-") <<
+		((S_IXGRP & buf.st_mode) ? "x" : "-") <<
+		((S_IROTH & buf.st_mode) ? "r" : "-") <<
+		((S_IWOTH & buf.st_mode) ? "w" : "-") <<
+		((S_IXOTH & buf.st_mode) ? "x" : "-") << " ";
+		
+		//number of links
+		cout << buf.st_nlink << " ";
 
+		//uid and gid
+		cout << buf.st_uid << " " << buf.st_gid << " ";
+
+		//size
+		cout << setw(8) << buf.st_size << " ";
+
+		//filename
+		cout << v.at(i);
+		cout << endl;
+	}	
+		
+
+	return;
+}
+
+void formatNormal(vector<char*> &v)
+{
+	int sum = 0;
+	int width = longestName(v,sum);
+	if(sum < 55)
+	{
+		for(unsigned i=0; i<v.size();++i)
+		{
+			cout <<  v.at(i) << "  " ;
+		}
+		cout << endl;
+	}
+	else
+	{
+		for(unsigned i=0; i<v.size();++i)
+		{
+			cout << left << setw(width+2) << v.at(i);
+		}
+		cout << endl;
+	}
+	return;
+}
+//simple sorting function to find column width
+int longestName(vector<char*> &v,int& sum) 
+{
+	int max=0;
+	for(unsigned i=0;i<v.size();++i)
+	{
+		int curr=strlen(v.at(i));
+		sum+=curr; //helps track if total length would exceed 55
+		if (curr>=max)
+		{
+			max=curr;
+		}
+	}
+	return max;
+}
 void setflags(set<char> &flags,bool& a,bool& l,bool& R)
 {
 	if(flags.find('a') != flags.end())	{	a=true;	}
