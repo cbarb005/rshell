@@ -1,0 +1,129 @@
+Script started on Sat 02 May 2015 12:03:26 AM PDT
+~
+cbarb005@hammer $ cs100
+[0;91m
+===============================================================================
+|                                                                             |
+| You have enabled settings specific for cs100.  Everything you do is being   |
+| recorded to measure your progress in the class.                             |
+|                                                                             |
+| Important commands for the class:                                           |
+|   * calcgrade.sh          displays a detailed breakdown of your grade       |
+|   * checksyscalls.sh      is your cpp file doing proper error checking?     |
+|   * typespeed             practice typing unix commands                     |
+|                                                                             |
+| Important commands for general C++ programming:                             |
+|   * make                  don't call g++ manually; let make do the work!    |
+|   * gdb                   the GNU debugger                                  |
+|   * valgrind              get rid of your memory leaks                      |
+|   * cppcheck              static analysis tool                              |
+|   * man                   find help about any syscall / terminal command    |
+|                                                                             |
+===============================================================================
+[0m
+[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~[0;95m [0;36m$[0m cd CS100/
+[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100[0;95m [0;36m$[0m cd rshell/
+[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell[0;95m (ls) [0;36m$[0m cd src
+[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell/src[0;95m (ls) [0;36m$[0m l[K#n[Kwill use ./a.out to execute
+[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell/src[0;95m (ls) [0;36m$[0m exit
+exit
+~
+cbarb005@hammer $ [Acs100[K[K[K[K[Kcd[K[Kcat ls.ss[K[K[K[K[K[K[K[K[Kcd[K[Kls
+[0m[01;32ma.out[0m*  [01;34mDesktop[0m/    [01;31mlab03.tgz[0m        [01;34mPublic[0m/      tutor
+bw.cpp  [01;34mDocuments[0m/  [01;34mMusic[0m/           structs.cpp  [01;34mVideos[0m/
+[01;34mcs061[0m/  [01;34mDownloads[0m/  [01;34mold_vim_config[0m/  [01;34mTemplates[0m/   [01;34mWINDOWS[0m/
+[01;34mCS100[0m/  [01;34mfolder[0m/     [01;34mPictures[0m/        test.cpp
+[m~
+cbarb005@hammer $ cd CS`[K100/
+~/CS100
+cbarb005@hammer $ cd src[K[K[Krshell/
+~/CS100/rshell
+cbarb005@hammer $ cd src/
+~/CS100/rshell/src
+cbarb005@hammer $ ls[K[K./a.out -l
+total: 184
+-rw------- 1 cbarb005 classes      0   4   1 23:57 ls.script
+drwx------ 2 cbarb005 classes   4096   4   1 23:54 fake
+-rw------- 1 cbarb005 classes   4875   3  19 23:55 rshell.cpp
+-rw------- 1 cbarb005 classes   6299   4   1 23:47 ls.cpp
+-rw------- 1 cbarb005 classes   3077   3  27 17:57 cp.cpp
+drwx------ 2 cbarb005 classes   4096   4   1 23:45 testdir
+-rw------- 1 cbarb005 classes   2698   3  27 17:27 Timer.h
+-rwx------ 1 cbarb005 classes  59875   4   1 23:49 a.out
+~/CS100/rshell/src
+cbarb005@hammer $ ./a.out -a
+.                             ..                            ls.script                     fake                          rshell.cpp                    ls.cpp                        cp.cpp                        testdir                       Timer.h                       a.out                         .nfs000000000109dfdf00000060  
+~/CS100/rshell/src
+cbarb005@hammer $ ./a.out -R
+.:
+ls.script  fake  rshell.cpp  ls.cpp  cp.cpp  testdir  Timer.h  a.out  
+fake:
+
+testdir:
+
+~/CS100/rshell/src
+cbarb005@hammer $ ./a.out -al
+total: 200
+drwx------ 4 cbarb005 classes   4096   4   1 23:57 .
+drwx------ 5 cbarb005 classes   4096   4   1 23:44 ..
+-rw------- 1 cbarb005 classes      0   4   1 23:57 ls.script
+drwx------ 2 cbarb005 classes   4096   4   1 23:54 fake
+-rw------- 1 cbarb005 classes   4875   3  19 23:55 rshell.cpp
+-rw------- 1 cbarb005 classes   6299   4   1 23:47 ls.cpp
+-rw------- 1 cbarb005 classes   3077   3  27 17:57 cp.cpp
+drwx------ 2 cbarb005 classes   4096   4   1 23:45 testdir
+-rw------- 1 cbarb005 classes   2698   3  27 17:27 Timer.h
+-rwx------ 1 cbarb005 classes  59875   4   1 23:49 a.out
+-rw------- 1 cbarb005 classes      0   4   1 23:48 .nfs000000000109dfdf00000060
+~/CS100/rshell/src
+cbarb005@hammer $ -[K./a.out -al[K[KlR
+.:
+total: 184
+-rw------- 1 cbarb005 classes      0   4   1 23:57 ls.script
+drwx------ 2 cbarb005 classes   4096   4   1 23:54 fake
+-rw------- 1 cbarb005 classes   4875   3  19 23:55 rshell.cpp
+-rw------- 1 cbarb005 classes   6299   4   1 23:47 ls.cpp
+-rw------- 1 cbarb005 classes   3077   3  27 17:57 cp.cpp
+drwx------ 2 cbarb005 classes   4096   4   1 23:45 testdir
+-rw------- 1 cbarb005 classes   2698   3  27 17:27 Timer.h
+-rwx------ 1 cbarb005 classes  59875   4   1 23:49 a.out
+fake:
+total: 0
+testdir:
+total: 0
+~/CS100/rshell/src
+cbarb005@hammer $ ./a.out -lR[K[KaR
+.:
+.                             ..                            ls.script                     fake                          rshell.cpp                    ls.cpp                        cp.cpp                        testdir                       Timer.h                       a.out                         .nfs000000000109dfdf00000060  
+fake:
+.  ..  
+testdir:
+.  ..  
+~/CS100/rshell/src
+cbarb005@hammer $ ./a.out -aRlR[K[KalR
+.:
+total: 200
+drwx------ 4 cbarb005 classes   4096   4   1 23:57 .
+drwx------ 5 cbarb005 classes   4096   4   1 23:44 ..
+-rw------- 1 cbarb005 classes      0   4   1 23:57 ls.script
+drwx------ 2 cbarb005 classes   4096   4   1 23:54 fake
+-rw------- 1 cbarb005 classes   4875   3  19 23:55 rshell.cpp
+-rw------- 1 cbarb005 classes   6299   4   1 23:47 ls.cpp
+-rw------- 1 cbarb005 classes   3077   3  27 17:57 cp.cpp
+drwx------ 2 cbarb005 classes   4096   4   1 23:45 testdir
+-rw------- 1 cbarb005 classes   2698   3  27 17:27 Timer.h
+-rwx------ 1 cbarb005 classes  59875   4   1 23:49 a.out
+-rw------- 1 cbarb005 classes      0   4   1 23:48 .nfs000000000109dfdf00000060
+fake:
+total: 16
+drwx------ 4 cbarb005 classes   4096   4   1 23:57 .
+drwx------ 5 cbarb005 classes   4096   4   1 23:44 ..
+testdir:
+total: 16
+drwx------ 4 cbarb005 classes   4096   4   1 23:57 .
+drwx------ 5 cbarb005 classes   4096   4   1 23:44 ..
+~/CS100/rshell/src
+cbarb005@hammer $ exit
+exit
+
+Script done on Sat 02 May 2015 12:05:55 AM PDT
