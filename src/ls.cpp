@@ -10,6 +10,7 @@
 #include <string.h>
 #include <string>
 #include <vector>
+#include <queue>
 #include <set>
 
 
@@ -21,7 +22,8 @@ void recursive();
 void dirStream(set<char>&,char*);
 void setflags(set<char>&,bool&,bool&,bool&);
 int flagID(char*,set<char>&);
-bool isDotFile(char*);
+bool isDot(char*); //specifically for ./ or ../
+bool isHiddenFile(char*); //any hidden file
 bool isFlag(char*);
 
 int main(int argc, char**argv)
@@ -72,9 +74,11 @@ int main(int argc, char**argv)
 void dirStream(set<char> &flagSet,char* dirc)
 {
 	DIR *dirptr;
-	struct dirent *fileInfo;
+	struct dirent *info;
+
 	bool a,l,R;
-	setflags(flagSet,a,l,R);
+	setflags(flagSet,a,l,R); //"activates" bools based on if flag is in set
+	queue<char*> dirq;
 
 	if(R)
 	{
@@ -85,20 +89,21 @@ void dirStream(set<char> &flagSet,char* dirc)
 		perror("opendir");
 	}
 	errno=0;
-	while(NULL != (fileInfo=readdir(dirptr)))
+	while(NULL != (info=readdir(dirptr)))
 	{	
-		if(isDotFile(fileInfo->d_name) && !a)
+		if(isHiddenFile(info->d_name) && !a)
 		{ continue; } //skip over dot files
 
-		cout << fileInfo->d_name << " ";
+		cout << info->d_name << " ";
 
-		if(R && fileInfo->d_type==DT_DIR)
+		if(R && info->d_type==DT_DIR && !isDot(info->d_name))
 		{	
-
-			//recursion here I guess
+			//adds directory to queue of directories to "recurse" through
+			dirq.push(info->d_name);
 		}
-
 	}
+	cout << endl; 
+
 	if(errno != 0)
 	{
 		perror("readdir");
@@ -107,7 +112,12 @@ void dirStream(set<char> &flagSet,char* dirc)
 	{
 		perror("closedir");
 	}
-		
+	while(!dirq.empty())
+	{
+		dirc=dirq.front();
+		dirq.pop();
+		dirStream(flagSet,dirc);
+	}
 	return;
 }
 
@@ -160,7 +170,17 @@ int flagID(char *flag, set<char> &flagSet)
 
 	return 0;
 }
-bool isDotFile(char* c)
+bool isDot(char* c)
+{
+	string dir(c);
+	if(dir == "." || dir == "..")
+	{
+		return true;
+	}
+	else { return false;}
+}
+
+bool isHiddenFile(char* c)
 {	
 	string file(c);
 	size_t pos= file.find(".");
