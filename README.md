@@ -17,7 +17,7 @@ bin/rshell
 ```
 
 ##Bugs
-
+###rshell
 When incorrectly entering an argument such as `|| pwd`, the program will ignore the fact there is no argument preceding the connector and will execute the rest. This is not the case for `pwd ||`, which would produce an error message.
 
 
@@ -26,4 +26,10 @@ Sometimes, a phantom empty line appears after executing a command. So far, this 
 
 If not a valid command, `perror` will return a message, but continue, even in a compound statement like `ls && pwdd && echo hello` and echo anyways.
 Similarly, a statement like ```pwd && && && && && && ls``` will also run both anyways, despite the missing arguments in between. Technically, doing nothing would easily succeed anyways, but if the expectation is that it would not run, then yes, it is a bug. 
+
+
+###ls
+When using -R, will not open directory, even if it is there.
+Output sometimes truncates a word and then continues it on the next line.
+Not really a bug, but month is output as number. 
 
