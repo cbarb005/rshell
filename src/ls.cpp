@@ -7,6 +7,8 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <pwd.h>
+#include <grp.h>
 #include <string.h>
 #include <string>
 #include <algorithm>
@@ -136,8 +138,9 @@ void formatLong(vector<char*> &v)
 			perror("stat");
 		}
 		if(buf.st_mode & S_IFDIR) { cout << "d"; }
-		else if(buf.st_mode & S_IFLNK) {cout << "l"; }
-		else /*if(buf.st_mode & S_IFREG)*/ {cout << "-";}
+		else if(buf.st_mode & S_IFREG) {cout << "-"; }
+		else if(buf.st_mode & S_IFLNK) { cout << "l";}
+		
 		
 		//permissions
 		cout <<
@@ -155,7 +158,18 @@ void formatLong(vector<char*> &v)
 		cout << buf.st_nlink << " ";
 
 		//uid and gid
-		cout << buf.st_uid << " " << buf.st_gid << " ";
+		struct passwd *pw;
+		if(NULL==(pw=getpwuid(buf.st_uid)))
+		{ 
+			perror("getpwuid");
+		}
+		cout << pw->pw_name << " " ;
+		struct group *grp;
+		if(NULL==(grp=getgrgid(buf.st_gid)))
+		{
+			perror("getgrgid");
+		}
+		cout << grp->gr_name << " ";
 
 		//size
 		cout << setw(8) << buf.st_size << " ";
