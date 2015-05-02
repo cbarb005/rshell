@@ -25,6 +25,7 @@ void dirStream(set<char>&,char*);
 void formatNormal(vector<char*> &);
 void formatLong(vector<char*> &);
 void setflags(set<char>&,bool&,bool&,bool&);
+void totalSize(vector<char*>&, blkcnt_t&);
 int longestName(vector<char*>&,int&);
 int flagID(char*,set<char>&);
 bool isDot(char*); //specifically for ./ or ../
@@ -58,7 +59,7 @@ int main(int argc, char**argv)
 		}
 		if(buf.st_mode & S_IFREG)
 		{
-			//stuff?
+			cout << argv[i]; //will just echo file to screen
 		}
 
 	}
@@ -93,7 +94,7 @@ void dirStream(set<char> &flagSet,char* dirc)
 	if((dirptr=opendir(dirc))==NULL)
 	{
 		perror("opendir");
-		;
+		exit(1);
 	}
 	errno=0;
 	while(NULL != (info=readdir(dirptr)))
@@ -129,8 +130,12 @@ void dirStream(set<char> &flagSet,char* dirc)
 }
 void formatLong(vector<char*> &v)
 {
-	int sum=0;
-	int width = longestName(v,sum);
+	//get total for output
+	blkcnt_t sum=0;
+	totalSize(v,sum);
+	//total will be based off GNU convention
+	cout << "total: " << sum << endl;
+
 	for(unsigned i=0;i<v.size();++i)
 	{
 		struct stat buf;
@@ -165,6 +170,8 @@ void formatLong(vector<char*> &v)
 			perror("getpwuid");
 		}
 		cout << pw->pw_name << " " ;
+
+		//get group id
 		struct group *grp;
 		if(NULL==(grp=getgrgid(buf.st_gid)))
 		{
@@ -173,15 +180,16 @@ void formatLong(vector<char*> &v)
 		cout << grp->gr_name << " ";
 
 		//size
-		cout << setw(8) << buf.st_size << " ";
+		cout << setw(6) << buf.st_size << " ";
 		
 		//time
-		time_t mtime=buf.st_mtime;
+		//time_t mtime=buf.st_mtime;
 		struct tm timep;
 
 		//time(&mtime);
 		if(NULL==(localtime_r(&buf.st_mtime,&timep)));
-		cout << timep.tm_mon << " " << timep.tm_mday << " ";
+		cout << setw(3) << timep.tm_mon << " "
+			 << setw(3) << timep.tm_mday << " ";
 		cout << timep.tm_hour << ":" << timep.tm_min << " ";
 		//filename
 		cout << v.at(i);
@@ -214,6 +222,23 @@ void formatNormal(vector<char*> &v)
 	}
 	return;
 }
+void totalSize(vector<char*> &v,blkcnt_t& total) //will get total for -l
+{
+	for(unsigned i=0;i<v.size();++i)
+	{
+		struct stat buf;
+		if(-1==(stat(v.at(i),&buf)))
+		{
+			perror("stat");
+		}
+		total+=buf.st_blocks;
+	}
+
+	return;
+}
+
+
+
 //simple sorting function to find column width
 int longestName(vector<char*> &v,int& sum) 
 {
