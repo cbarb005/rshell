@@ -37,7 +37,7 @@ int main(int argc, char**argv)
 	vector<char*> dirc;	
 	set<char> flags;
 
-	for(int i=0; i<argc;++i)
+	for(int i=1; i<argc;++i)
 	{
 		struct stat buf;
 		 
