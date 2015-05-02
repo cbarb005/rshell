@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
+#include <time.h>
 #include <string.h>
 #include <string>
 #include <algorithm>
@@ -173,7 +174,15 @@ void formatLong(vector<char*> &v)
 
 		//size
 		cout << setw(8) << buf.st_size << " ";
+		
+		//time
+		time_t mtime=buf.st_mtime;
+		struct tm timep;
 
+		//time(&mtime);
+		if(NULL==(localtime_r(&buf.st_mtime,&timep)));
+		cout << timep.tm_mon << " " << timep.tm_mday << " ";
+		cout << timep.tm_hour << ":" << timep.tm_min << " ";
 		//filename
 		cout << v.at(i);
 		cout << endl;
