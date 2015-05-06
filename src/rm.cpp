@@ -29,8 +29,6 @@ int main(int argc, char**argv)
 	{
 		recursFlag=true;
 	}
-
-	//if -r exists, allow both files and folders
 	int i;
 	if(recursFlag) {i=2;}
 	else { i =1; }
@@ -48,7 +46,6 @@ int main(int argc, char**argv)
 		}
 
 	}
-
 return 0;
 }
 
@@ -88,7 +85,7 @@ void recursiveRm(char*c,bool &flag)
 	{
 		removeDir(dirVect.at(i),flag);
 	}
-
+	removeDir(c, flag);
 	return;
 }
 
