@@ -157,7 +157,6 @@ void executor(vector<string> &vect)
 		if(pid==-1) //error with fork
 		{
 			perror("fork");
-			exit(1);
 		}
 		else if(pid==0) //child
 		{
@@ -250,5 +249,10 @@ bool validConnector(string &str)
 	if(str=="&&") { return true; }
 	else if(str=="||") { return true;}
 	else if(str==";") { return true;}
+	else if(str=="|") { return true;}
+	else if(str=="<") { return true;}
+	else if(str==">") { return true;}
+	else if(str==">>") {return true;}
+	//else if(str=="<<<") {return true;} //if time allows
 	return false;
 }
