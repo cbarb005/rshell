@@ -30,36 +30,36 @@ int main()
 		
 		//declares tokenizer and storage for tokens
 		string cmd=""; //gathers entire command until connector or end
-		string cnntr=""; //will hold connector
-		vector<string> cmdvect;
+		string sym=""; //will hold collected symbol ('||' vs '|') 
+		vector<string> cmdvect; 
 
-		char_separator<char> delim("","&|#;");
+		char_separator<char> delim("","<&|#;>");
 		toknizer parser(userinput,delim);
 
 		for(toknizer::iterator it=parser.begin();it!=parser.end();++it)
 		{
 			if(*it=="#") { break; } //finish reading input if comment
-			if(*it=="&" || *it=="|" || *it==";")
+			if(*it=="&" || *it=="|" || *it==";" || *it==">" || *it=="<" ) //doesn't check validity/meaning of symbol yet
 			{
-				if(!cmd.empty())
+				if(!cmd.empty()) //if there is currently a command recorded, push it onto vector and start reading in symbol
 				{
 					cmdvect.push_back(cmd);
 					cmd.clear();
-					cnntr+=(*it);
+					sym+=(*it);
 				}
-				else if(cmd.empty() && !cnntr.empty())
+				else if(cmd.empty() && !sym.empty()) 
 				{
-					cnntr+=(*it);
+					sym+=(*it);
 				}
 			}
 			//if none of cases above apply, can be assumed to be command
 			else
 			{ 
-				if(!cnntr.empty())
+				if(!sym.empty())
 				{
-					cmdvect.push_back(cnntr);
+					cmdvect.push_back(sym);
 					cmd+=(*it);
-					cnntr.clear();
+					sym.clear();
 					//"empties" connector and resumes building command
 				}
 				else //otherwise, just keep building command
@@ -75,19 +75,23 @@ int main()
 		{
 			cmdvect.push_back(cmd); //adds last of input
 		}
-		if(!cnntr.empty())
+		if(!sym.empty())
 		{
-			cmdvect.push_back(cnntr);//and trailing connectors
+			cmdvect.push_back(sym);//and trailing connectors
 		}
-
-		int x=syntaxCheck(cmdvect);
+		for(unsigned n=0;n<cmdvect.size();++n)
+		{
+			cout << cmdvect.at(n) << endl;
+		}
+		/*int x=syntaxCheck(cmdvect);
 		if(x==0)
 		{
 			executor(cmdvect);
-		}
+		}*/
 	}
 	//end of while loop
-	
+
+
 	return 0;
 } //end of main
 
