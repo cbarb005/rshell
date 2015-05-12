@@ -14,7 +14,9 @@ using namespace boost;
 
 int syntaxCheck(vector<string>&vect);
 bool isConnector(string&);
-bool validConnector(string&);
+bool isSymbol(string&);
+bool isSemiColon(string &s);
+bool validSymbol(string&);
 void executor(vector<string> &vect);
 void commandParser(vector<string> &v, string str);
 
@@ -81,13 +83,14 @@ int main()
 		}
 		for(unsigned n=0;n<cmdvect.size();++n)
 		{
-			cout << cmdvect.at(n) << endl;
+			cout << n << ": " << cmdvect.at(n) << endl;
 		}
-		/*int x=syntaxCheck(cmdvect);
+		int x=syntaxCheck(cmdvect);
 		if(x==0)
-		{
-			executor(cmdvect);
-		}*/
+		{	
+			cout << "All valid!\n";
+			//executor(cmdvect);
+		}
 	}
 	//end of while loop
 
@@ -215,7 +218,31 @@ int syntaxCheck(vector<string> &vect)
 	//checks input for invalid syntax in connectors
 	for(unsigned i=0; i<vect.size();++i)
 	{
-		if(isConnector(vect.at(i))) 
+		//after initial parsing, vector passed in should always have
+		//commands in even indices, and any symbols in odd indices.
+		if(i%2==0) //if even index...
+		{
+			if(isSymbol(vect.at(i))) //...and a symbol...
+			{
+				cerr << "Syntax error: missing argument.\n"; 
+				return -1;  //...argument must be missing
+			}
+			else { continue; } //if not a symbol, assume to be intended command
+		}
+		else if(i%2!=0 && isSymbol(vect.at(i))) //if odd index a symbol
+		{
+			if(!validSymbol(vect.at(i))) //and symbol is not valid
+			{
+				cerr << "Syntax error: invalid operators.\n";
+				return -1; //will return an error
+			}
+			else //if valid, just continue checking
+			{
+				continue;
+			}
+		}
+	
+	/*	if(isConnector(vect.at(i))) 
 		{
 			//ensures argument for && and || is complete
 			if((i==0 || i+1==vect.size()) && vect.at(i)!=";")
@@ -229,8 +256,16 @@ int syntaxCheck(vector<string> &vect)
 				return -1;
 			}
 		}
+	}*/
 	}
 	return 0; //no syntax errors found
+}
+
+bool isSemiColon(string &s) //literally only to allow ";" as a valid command ending.
+{
+	size_t sc=s.find(";");
+	if(sc==string::npos) { return false;}
+	return true;
 }
 
 bool isConnector(string &s)
@@ -247,7 +282,23 @@ bool isConnector(string &s)
 	return true;
 }
 
-bool validConnector(string &str)
+bool isSymbol(string &s)
+{
+	size_t a=s.find("&");
+	size_t b=s.find("|");
+	size_t c=s.find(";");
+	size_t d=s.find(">");
+	size_t e=s.find("<");
+	size_t noSym = string::npos; //"no such symbol"
+	//if no symbols are found in the string
+	if(a==noSym && b==noSym && c==noSym && d==noSym && e==noSym)
+	{
+		return false; //assume it's not an attempt at connector/redirection symbol
+	}
+	return true;
+}
+
+bool validSymbol(string &str)
 {
 	//only supports few connectors now
 	if(str=="&&") { return true; }
