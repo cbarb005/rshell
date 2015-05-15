@@ -12,6 +12,7 @@
 using namespace std;
 using namespace boost;
 
+int cmdSyntaxCheck(string &s);
 int syntaxCheck(vector<string>&vect);
 bool isConnector(string&);
 bool isSymbol(string&);
@@ -90,8 +91,7 @@ int main()
 		int x=syntaxCheck(cmdvect);
 		if(x==0)
 		{	
-			cout << "All valid!\n";
-			//executor(cmdvect);
+			executor(cmdvect);
 		}
 	}
 	//end of while loop
@@ -191,7 +191,7 @@ void executor(vector<string> &vect)
 		//deallocates argv as well as strdup's dynamic memory
 		for(unsigned i=0;i<sz+1;++i)
 		{
-			delete [] argv[i];
+			free(argv[i]);	
 		}
 		delete [] argv;
 	}
@@ -223,12 +223,18 @@ int syntaxCheck(vector<string> &vect)
 		//commands in even indices, and any symbols in odd indices.
 		if(i%2==0) //if even index...
 		{
-			if(isSymbol(vect.at(i))) //...and is a symbol...
+			if(isConnector(vect.at(i))) //...and is a symbol...
 			{
 				cerr << "Syntax error: missing argument.\n"; 
 				return -1;  //...argument must be missing
 			}
-			else { continue; } //if not a symbol, assume to be intended command
+			else if(isSymbol(vect.at(i))) //if io redirection symbol present
+			{
+				if(-1==(cmdSyntaxCheck(vect.at(i)))) //check it too
+				{ return -1; }
+				else { continue;}
+			}
+			else { continue; } //if "vanilla" command, just carry on
 		}
 		else if(i%2!=0 ) //if odd index 
 		{
@@ -252,6 +258,29 @@ int syntaxCheck(vector<string> &vect)
 	
 	}
 	return 0; //no syntax errors found
+}
+
+int cmdSyntaxCheck(string &s)
+{
+	vector<string> strv;
+	commandParser(strv, s);
+	for(unsigned i=0;i<strv.size();++i)
+	{
+		if(i%2==0) //similar to SyntaxCheck, but smaller scale
+		{
+			if(isSymbol(strv.at(i)))
+			{ cerr << "Error: missing argument.\n"; return -1; }
+		}
+		else if(i%2!=0)
+		{
+			if(!validSymbol(strv.at(i)))
+			{ cerr << "Error: not a valid operator.\n"; return -1; }
+			if(isSymbol(strv.at(i)) && i+i==strv.size())
+			{ cerr << "Error: missing argument.\n"; return -1;}
+		}
+	}
+
+	return 0;
 }
 
 bool isSemiColon(string &s) //literally only to allow ";" as a valid command ending.
@@ -283,14 +312,13 @@ bool isSymbol(string &s)
 	//if no symbols are found in the string
 	if(a==noSym && b==noSym) 
 	{
-		return false; //assume it's not an attempt at connector/redirection symbol
+		return false; //assume it's not an attempt at redirection symbol
 	}
 	return true;
 }
 
 bool validSymbol(string &str)
 {
-	//only supports few connectors now
 	if(str=="&&") { return true; }
 	else if(str=="||") { return true;}
 	else if(str==";") { return true;}
