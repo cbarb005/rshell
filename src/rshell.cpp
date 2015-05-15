@@ -41,15 +41,15 @@ int main()
 		for(toknizer::iterator it=parser.begin();it!=parser.end();++it)
 		{
 			if(*it=="#") { break; } //finish reading input if comment
-			if(*it=="&" || *it=="|" || *it==";" || *it==">" || *it=="<" ) //doesn't check validity/meaning of symbol yet
+			if(*it=="&" || *it=="|" || *it==";" ) //doesn't check validity/meaning of symbol yet
 			{
-				if(!cmd.empty()) //if there is currently a command recorded, push it onto vector and start reading in symbol
+				if(!cmd.empty()) //if there is currently a command recorded, push it onto vector, start reading in symbol
 				{
 					cmdvect.push_back(cmd);
 					cmd.clear();
 					sym+=(*it);
 				}
-				else if(cmd.empty() && !sym.empty()) 
+				else if(cmd.empty() ||  !sym.empty()) 
 				{
 					sym+=(*it);
 				}
@@ -67,7 +67,9 @@ int main()
 				else //otherwise, just keep building command
 				{
 					cmd+=(*it);
-					cmd+=" "; //spaces out commands like "ls -a"
+					string temp=*it;
+					if(!isSymbol(temp)) //to avoid spaces in ">>"
+					{ cmd+=" "; }//spaces out commands like "ls -a"
 				}
 			}
 
@@ -101,7 +103,6 @@ int main()
 void executor(vector<string> &vect)
 {
 	bool success=false;
-	bool preArg=false;
 
 	for(unsigned i=0;i<vect.size();++i)
 	{
@@ -114,11 +115,11 @@ void executor(vector<string> &vect)
 		{
 			if(vect.at(i)=="&&")
 			{ 
-				if(success==false || i==0 || preArg==false)
+				if(success==false || i==0 )
 				{
 					return;
 				}
-				else	{ preArg=false;  continue;	}
+				else	{  continue;	}
 			}
 			if(vect.at(i)=="||")
 			{
@@ -126,7 +127,7 @@ void executor(vector<string> &vect)
 				{	
 					continue;
 				}
-				else if(success==true || i==0 || preArg==false)	{ return; }
+				else if(success==true || i==0  )	{ return; }
 			}
 			if(vect.at(i)==";" && i!=0)
 			{
@@ -135,7 +136,7 @@ void executor(vector<string> &vect)
 		}
 		else
 		{
-			preArg=true;
+			
 		}
 		//otherwise can be assumed to be a command
 		
@@ -222,19 +223,26 @@ int syntaxCheck(vector<string> &vect)
 		//commands in even indices, and any symbols in odd indices.
 		if(i%2==0) //if even index...
 		{
-			if(isSymbol(vect.at(i))) //...and a symbol...
+			if(isSymbol(vect.at(i))) //...and is a symbol...
 			{
 				cerr << "Syntax error: missing argument.\n"; 
 				return -1;  //...argument must be missing
 			}
 			else { continue; } //if not a symbol, assume to be intended command
 		}
-		else if(i%2!=0 && isSymbol(vect.at(i))) //if odd index a symbol
+		else if(i%2!=0 ) //if odd index 
 		{
+			
 			if(!validSymbol(vect.at(i))) //and symbol is not valid
 			{
-				cerr << "Syntax error: invalid operators.\n";
+				cerr << "Syntax error: invalid operator.\n";
 				return -1; //will return an error
+			}
+			else if(isSymbol(vect.at(i)) && i+1==vect.size())
+			{
+				//if symbol but last one, argument is missing
+				cerr << "Syntax error: missing argument.\n"; 
+				return -1;
 			}
 			else //if valid, just continue checking
 			{
@@ -242,21 +250,6 @@ int syntaxCheck(vector<string> &vect)
 			}
 		}
 	
-	/*	if(isConnector(vect.at(i))) 
-		{
-			//ensures argument for && and || is complete
-			if((i==0 || i+1==vect.size()) && vect.at(i)!=";")
-			{
-				cerr << "Connector syntax error: missing argument\n";
-				return -1; 
-			}
-			if(!validConnector(vect.at(i)))
-			{
-				cerr << "Connector syntax error: invalid connector\n";
-				return -1;
-			}
-		}
-	}*/
 	}
 	return 0; //no syntax errors found
 }
@@ -284,14 +277,11 @@ bool isConnector(string &s)
 
 bool isSymbol(string &s)
 {
-	size_t a=s.find("&");
-	size_t b=s.find("|");
-	size_t c=s.find(";");
-	size_t d=s.find(">");
-	size_t e=s.find("<");
+	size_t a=s.find(">");
+	size_t b=s.find("<");
 	size_t noSym = string::npos; //"no such symbol"
 	//if no symbols are found in the string
-	if(a==noSym && b==noSym && c==noSym && d==noSym && e==noSym)
+	if(a==noSym && b==noSym) 
 	{
 		return false; //assume it's not an attempt at connector/redirection symbol
 	}
