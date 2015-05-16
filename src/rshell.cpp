@@ -20,6 +20,9 @@ bool isSemiColon(string &s);
 bool validSymbol(string&);
 void executor(vector<string> &vect);
 void commandParser(vector<string> &v, string str);
+void ioType(string &s, bool&, bool&, bool&);
+bool hasPipe(vector<string> &v);
+void removeSymbol(vector<string> &v, string str);
 
 typedef tokenizer<char_separator<char> > toknizer;
 int main()
@@ -42,7 +45,7 @@ int main()
 		for(toknizer::iterator it=parser.begin();it!=parser.end();++it)
 		{
 			if(*it=="#") { break; } //finish reading input if comment
-			if(*it=="&" || *it=="|" || *it==";" ) //doesn't check validity/meaning of symbol yet
+			if(*it=="&" || *it=="|" || *it==";" ) 
 			{
 				if(!cmd.empty()) //if there is currently a command recorded, push it onto vector, start reading in symbol
 				{
@@ -96,7 +99,6 @@ int main()
 	}
 	//end of while loop
 
-
 	return 0;
 } //end of main
 
@@ -106,47 +108,35 @@ void executor(vector<string> &vect)
 
 	for(unsigned i=0;i<vect.size();++i)
 	{
-		if(vect.at(i)=="exit")
-		{
-			cout << "is exit" << endl;
-		}
-		//checks if current string is connector
-		else if(isConnector(vect.at(i)))
+		if(isConnector(vect.at(i)))
 		{
 			if(vect.at(i)=="&&")
 			{ 
-				if(success==false || i==0 )
-				{
-					return;
-				}
-				else	{  continue;	}
+				if(success==false) { return; }
+				else {  continue; }
 			}
 			if(vect.at(i)=="||")
 			{
-				if(success==false && i!=0)
-				{	
-					continue;
-				}
-				else if(success==true || i==0  )	{ return; }
+				if(success==false)	{ continue; }
+				else if(success==true )	{ return; }
 			}
-			if(vect.at(i)==";" && i!=0)
-			{
-				continue;
-			}
+			if(vect.at(i)==";")	{ continue;	}
 		}
-		else
-		{
-			
-		}
+
 		//otherwise can be assumed to be a command
+		bool in=false;
+		bool out=false;
+		bool app=false;
+		ioType(vect.at(i),in,app,out);
 		
 		//parse vect.at(i) into smaller vector
 		vector<string>argvect;
-		commandParser(argvect,vect.at(i));
+		if(in || out || app) { removeSymbol(argvect,vect.at(i)); }
+		else { commandParser(argvect,vect.at(i)); }
 
 		//store vector size for array allocation
 		const size_t sz=argvect.size();
-		char**argv=new char*[sz+1]; //REMEMBER- delete at end
+		char**argv=new char*[sz+1]; 
 		
 		for(unsigned j=0;j<sz+1;++j)
 		{
@@ -154,28 +144,93 @@ void executor(vector<string> &vect)
 			{
 				argv[j]=strdup(argvect.at(j).c_str()); 
 			}
-			else if(j==sz) //adds null at end
-			{
-				argv[j]=NULL;
-			}
+			else if(j==sz)	{ argv[j]=NULL; }//adds null at end
 		}
 		
 		//fork and attempt to execute using execvp
 		pid_t pid=fork();
-		if(pid==-1) //error with fork
-		{
-			perror("fork");
-		}
+		if(pid==-1) { perror("fork"); }  //error with fork
 		else if(pid==0) //child
 		{
-
 			if(execvp(argv[0],argv)==-1)
 			{
-				success=false;  //redundant maybe?
+				//success=false;  //redundant maybe?
 				perror("execvp");
-				exit(1);
 			}
-			
+			_exit(0);
+		}
+		else //parent
+		{	
+			if(wait(0)==-1) { perror("wait"); }
+			success=true;
+		}
+		
+		//deallocates argv as well as strdup's dynamic memory
+		for(unsigned i=0;i<sz+1;++i) {	free(argv[i]);	}
+		delete [] argv;
+	}
+	return;
+}
+
+void pipeExecutor(vector<string> &vect)
+{
+	bool success=false;
+	//int pipeCnt=0;
+
+	for(unsigned i=0;i<vect.size();++i)
+	{
+		//checks if current string is connector
+		if(isConnector(vect.at(i)))
+		{
+			if(vect.at(i)=="&&")
+			{ 
+				if(success==false) { return; }
+				else {  continue; }
+			}
+			if(vect.at(i)=="||")
+			{
+				if(success==false)	{ continue; }
+				else if(success==true )	{ return; }
+			}
+			if(vect.at(i)==";")	{ continue;	}
+		}
+
+		//otherwise can be assumed to be a command
+		//indicate if subcommand is redirecting
+		bool in=false;
+		bool out=false;
+		bool app=false;
+		ioType(vect.at(i),in,app,out);
+		
+		//parse vect.at(i) into smaller vector
+		vector<string>argvect;
+		if(in || out || app) { removeSymbol(argvect,vect.at(i)); }
+		else { commandParser(argvect,vect.at(i)); }
+
+		//store vector size for array allocation
+		const size_t sz=argvect.size();
+		char**argv=new char*[sz+1]; 
+		
+		for(unsigned j=0;j<sz+1;++j)
+		{
+			if(j<sz)//using strdup since it dynamically allocates on its own
+			{
+				argv[j]=strdup(argvect.at(j).c_str()); 
+			}
+			else if(j==sz)	{ argv[j]=NULL; }//adds null at end
+		}
+		
+		/*//fork and attempt to execute using execvp
+		pid_t pid=fork();
+		if(pid==-1) { perror("fork"); }  //error with fork
+		else if(pid==0) //child
+		{
+			if(execvp(argv[0],argv)==-1)
+			{
+				//success=false;  //redundant maybe?
+				perror("execvp");
+
+			}
 			_exit(0);
 		}
 		else //parent
@@ -183,7 +238,7 @@ void executor(vector<string> &vect)
 			if(wait(0)==-1)
 			{
 				perror("wait");
-				exit(1);
+
 			}
 			success=true;
 		}
@@ -193,11 +248,22 @@ void executor(vector<string> &vect)
 		{
 			free(argv[i]);	
 		}
-		delete [] argv;
+		delete [] argv;*/
 	}
 	return;
 }
-
+void ioType(string &s, bool& in, bool& append, bool& out)
+{
+	vector<string> v;
+	commandParser(v,s);
+	for(unsigned i=0;i<v.size();++i)
+	{
+		if(v.at(i)=="<") { in=true; } 
+		else if (v.at(i)==">") { out=true; }
+		else if (v.at(i)==">>") { append=true; }
+	}
+	return;
+}
 void commandParser(vector<string> &v, string str)
 {
 	char_separator<char> delim(" ");
@@ -208,9 +274,21 @@ void commandParser(vector<string> &v, string str)
 		{
 			exit(0);
 		}
-		v.push_back(*it);
+		else { v.push_back(*it); }
 	}
-
+	return;
+}
+void removeSymbol(vector<string> &v, string str)
+{
+	//in order to pass into exec, parses symbols out
+	char_separator<char> delim(" ","<>");
+	toknizer parser(str,delim);
+	for(toknizer::iterator it=parser.begin();it!=parser.end();++it)
+	{
+		if(*it=="exit") { exit(0); }
+		if(*it=="<" || *it==">") { continue;}
+		else { v.push_back(*it); }
+	}
 	return;
 }
 
@@ -255,7 +333,6 @@ int syntaxCheck(vector<string> &vect)
 				continue;
 			}
 		}
-	
 	}
 	return 0; //no syntax errors found
 }
@@ -266,6 +343,7 @@ int cmdSyntaxCheck(string &s)
 	commandParser(strv, s);
 	for(unsigned i=0;i<strv.size();++i)
 	{
+		cout << strv.at(i) << endl;
 		if(i%2==0) //similar to SyntaxCheck, but smaller scale
 		{
 			if(isSymbol(strv.at(i)))
@@ -282,6 +360,15 @@ int cmdSyntaxCheck(string &s)
 
 	return 0;
 }
+bool hasPipe(vector<string> &v)
+{
+	for(unsigned i=0;i<v.size();++i)
+	{	
+		cout << v.at(i) << endl;
+		if(v.at(i)=="|") { return true; }
+	}
+	return false;
+}
 
 bool isSemiColon(string &s) //literally only to allow ";" as a valid command ending.
 {
@@ -289,7 +376,7 @@ bool isSemiColon(string &s) //literally only to allow ";" as a valid command end
 	if(sc==string::npos) { return false;}
 	return true;
 }
-
+	
 bool isConnector(string &s)
 {
 	//function just checks if token is supposed to be a connector
