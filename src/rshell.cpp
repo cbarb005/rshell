@@ -104,7 +104,7 @@ int main()
 
 void executor(vector<string> &vect)
 {
-	bool success=false;
+	bool success=true;
 
 	for(unsigned i=0;i<vect.size();++i)
 	{
@@ -161,20 +161,16 @@ void executor(vector<string> &vect)
 		{
 			if(in) { dup2(fdIO,0); if(-1==(close(fdIO))) { perror("close");}  }
 			if(out || app) { dup2(fdIO,1);  if(-1==(close(fdIO))) { perror("close");} }
-
+			success = true; //"temporary" based on execvp's success or failure
 			if(execvp(argv[0],argv)==-1) {	perror("execvp");	}
-			
+			success = false;  //if it fails, set it back to false
 			_exit(0);
 		}
 		else //parent
 		{	
-			cout << "In parent\n";
 			if(wait(0)==-1) { perror("wait"); }
 			if(in) {  close(fdIO); }
 			if(out || app) {  close(fdIO); }
-			cout << "after closing\n";
-		
-			success=true;
 		}
 		
 		//deallocates argv as well as strdup's dynamic memory
@@ -186,12 +182,11 @@ void executor(vector<string> &vect)
 
 void pipeExecutor(vector<string> &vect)
 {
+
 	bool success=false;
-	//int pipeCnt=0;
 
 	for(unsigned i=0;i<vect.size();++i)
 	{
-		//checks if current string is connector
 		if(isConnector(vect.at(i)))
 		{
 			if(vect.at(i)=="&&")
@@ -208,7 +203,6 @@ void pipeExecutor(vector<string> &vect)
 		}
 
 		//otherwise can be assumed to be a command
-		//indicate if subcommand is redirecting
 		bool in=false;
 		bool out=false;
 		bool app=false;
@@ -216,7 +210,7 @@ void pipeExecutor(vector<string> &vect)
 		
 		//parse vect.at(i) into smaller vector
 		vector<string>argvect;
-		string argStr=""; //for IO_redirection
+		string argStr="";
 		if(in || out || app) { removeSymbol(argvect,vect.at(i),argStr); }
 		else { commandParser(argvect,vect.at(i)); }
 
@@ -227,43 +221,54 @@ void pipeExecutor(vector<string> &vect)
 		for(unsigned j=0;j<sz+1;++j)
 		{
 			if(j<sz)//using strdup since it dynamically allocates on its own
-			{
+			{ 
 				argv[j]=strdup(argvect.at(j).c_str()); 
 			}
 			else if(j==sz)	{ argv[j]=NULL; }//adds null at end
 		}
-		//int fd[pipeCnt*2];
-		
-		/*//fork and attempt to execute using execvp
+
+		int fdIO;
+		if(in) { fdIO = open(argStr.c_str(), O_RDONLY);}
+		else if (out) { fdIO=open(argStr.c_str(),O_WRONLY | O_TRUNC | O_CREAT,S_IRUSR | S_IWUSR); }
+		else if (app) { fdIO=open(argStr.c_str(),O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);}
+		if(-1==fdIO) { perror("open"); };
+
+		//fork and attempt to execute using execvp
 		pid_t pid=fork();
 		if(pid==-1) { perror("fork"); }  //error with fork
 		else if(pid==0) //child
 		{
-			if(execvp(argv[0],argv)==-1)
+			if(in)
 			{
-				//success=false;  //redundant maybe?
-				perror("execvp");
-
+				if ((dup2(fdIO,0))==-1) { perror("dup2"); } 
+				if(((close(fdIO))==-1)) { perror("close");} 
 			}
+			if(out || app)
+			{
+				if ((dup2(fdIO,1))==-1) { perror("dup2"); }
+				if((close(fdIO))==-1) { perror("close");}
+			}
+			//temp set to true
+			success=true;
+			if(execvp(argv[0],argv)==-1) {	perror("execvp");	}
+			//if fails, then before exiting, set success to false
+			success=false;
 			_exit(0);
 		}
 		else //parent
 		{	
-			if(wait(0)==-1)
-			{
-				perror("wait");
+			if(wait(0)==-1) { perror("wait"); }
+			if(in) {  if ((close(fdIO))==-1) { perror("close");} }
+			if(out || app) {  if ((close(fdIO))==-1) { perror("close");} }
 
-			}
-			success=true;
 		}
 		
 		//deallocates argv as well as strdup's dynamic memory
-		for(unsigned i=0;i<sz+1;++i)
-		{
-			free(argv[i]);	
-		}
-		delete [] argv;*/
+		for(unsigned i=0;i<sz+1;++i) {	free(argv[i]);	}
+		delete [] argv;
 	}
+
+
 	return;
 }
 void ioType(string &s, bool& in, bool& append, bool& out)
