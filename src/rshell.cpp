@@ -163,13 +163,17 @@ void executor(vector<string> &vect)
 			if(out || app) { dup2(fdIO,1);  if(-1==(close(fdIO))) { perror("close");} }
 
 			if(execvp(argv[0],argv)==-1) {	perror("execvp");	}
-			exit(0);
+			
+			_exit(0);
 		}
 		else //parent
 		{	
+			cout << "In parent\n";
 			if(wait(0)==-1) { perror("wait"); }
-			if(in) { close(0); close(1); close(fdIO); }
-			if(out || app) { close(1); close(0); close(fdIO); }
+			if(in) {  close(fdIO); }
+			if(out || app) {  close(fdIO); }
+			cout << "after closing\n";
+		
 			success=true;
 		}
 		
@@ -375,7 +379,6 @@ bool hasPipe(vector<string> &v)
 {
 	for(unsigned i=0;i<v.size();++i)
 	{	
-		cout << v.at(i) << endl;
 		if(v.at(i)=="|") { return true; }
 	}
 	return false;
