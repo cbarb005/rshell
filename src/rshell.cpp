@@ -6,6 +6,8 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <string.h>
 #include <boost/tokenizer.hpp>
 
@@ -19,10 +21,11 @@ bool isSymbol(string&);
 bool isSemiColon(string &s);
 bool validSymbol(string&);
 void executor(vector<string> &vect);
+void pipeExecutor(vector<string>& );
 void commandParser(vector<string> &v, string str);
 void ioType(string &s, bool&, bool&, bool&);
 bool hasPipe(vector<string> &v);
-void removeSymbol(vector<string> &v, string str);
+void removeSymbol(vector<string> &v, string str,string &arg);
 
 typedef tokenizer<char_separator<char> > toknizer;
 int main()
@@ -87,14 +90,11 @@ int main()
 		{
 			cmdvect.push_back(sym);//and trailing connectors
 		}
-		for(unsigned n=0;n<cmdvect.size();++n)
-		{
-			cout << n << ": " << cmdvect.at(n) << endl;
-		}
 		int x=syntaxCheck(cmdvect);
 		if(x==0)
-		{	
-			executor(cmdvect);
+		{
+			if(hasPipe(cmdvect)) { pipeExecutor(cmdvect); }
+			else { executor(cmdvect); } 
 		}
 	}
 	//end of while loop
@@ -131,7 +131,8 @@ void executor(vector<string> &vect)
 		
 		//parse vect.at(i) into smaller vector
 		vector<string>argvect;
-		if(in || out || app) { removeSymbol(argvect,vect.at(i)); }
+		string argStr="";
+		if(in || out || app) { removeSymbol(argvect,vect.at(i),argStr); }
 		else { commandParser(argvect,vect.at(i)); }
 
 		//store vector size for array allocation
@@ -141,27 +142,34 @@ void executor(vector<string> &vect)
 		for(unsigned j=0;j<sz+1;++j)
 		{
 			if(j<sz)//using strdup since it dynamically allocates on its own
-			{
+			{ 
 				argv[j]=strdup(argvect.at(j).c_str()); 
 			}
 			else if(j==sz)	{ argv[j]=NULL; }//adds null at end
 		}
-		
+
+		int fdIO;
+		if(in) { fdIO = open(argStr.c_str(), O_RDONLY);}
+		else if (out) { fdIO=open(argStr.c_str(),O_WRONLY | O_TRUNC | O_CREAT,S_IRUSR | S_IWUSR); }
+		else if (app) { fdIO=open(argStr.c_str(),O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);}
+		if(-1==fdIO) { perror("open"); };
+
 		//fork and attempt to execute using execvp
 		pid_t pid=fork();
 		if(pid==-1) { perror("fork"); }  //error with fork
 		else if(pid==0) //child
 		{
-			if(execvp(argv[0],argv)==-1)
-			{
-				//success=false;  //redundant maybe?
-				perror("execvp");
-			}
-			_exit(0);
+			if(in) { dup2(fdIO,0); if(-1==(close(fdIO))) { perror("close");}  }
+			if(out || app) { dup2(fdIO,1);  if(-1==(close(fdIO))) { perror("close");} }
+
+			if(execvp(argv[0],argv)==-1) {	perror("execvp");	}
+			exit(0);
 		}
 		else //parent
 		{	
 			if(wait(0)==-1) { perror("wait"); }
+			if(in) { close(0); close(1); close(fdIO); }
+			if(out || app) { close(1); close(0); close(fdIO); }
 			success=true;
 		}
 		
@@ -204,7 +212,8 @@ void pipeExecutor(vector<string> &vect)
 		
 		//parse vect.at(i) into smaller vector
 		vector<string>argvect;
-		if(in || out || app) { removeSymbol(argvect,vect.at(i)); }
+		string argStr=""; //for IO_redirection
+		if(in || out || app) { removeSymbol(argvect,vect.at(i),argStr); }
 		else { commandParser(argvect,vect.at(i)); }
 
 		//store vector size for array allocation
@@ -219,6 +228,7 @@ void pipeExecutor(vector<string> &vect)
 			}
 			else if(j==sz)	{ argv[j]=NULL; }//adds null at end
 		}
+		//int fd[pipeCnt*2];
 		
 		/*//fork and attempt to execute using execvp
 		pid_t pid=fork();
@@ -278,16 +288,18 @@ void commandParser(vector<string> &v, string str)
 	}
 	return;
 }
-void removeSymbol(vector<string> &v, string str)
+void removeSymbol(vector<string> &v, string str,string &arg)
 {
-	//in order to pass into exec, parses symbols out
+	//in order to pass into exec, parses symbols out, and get IO file
+	bool symFound=false;
 	char_separator<char> delim(" ","<>");
 	toknizer parser(str,delim);
 	for(toknizer::iterator it=parser.begin();it!=parser.end();++it)
 	{
 		if(*it=="exit") { exit(0); }
-		if(*it=="<" || *it==">") { continue;}
-		else { v.push_back(*it); }
+		if(*it=="<" || *it==">") { symFound=true; }
+		else if(!symFound) { v.push_back(*it); }
+		else if(symFound) { arg=(*it); } //input/output file
 	}
 	return;
 }
@@ -343,7 +355,6 @@ int cmdSyntaxCheck(string &s)
 	commandParser(strv, s);
 	for(unsigned i=0;i<strv.size();++i)
 	{
-		cout << strv.at(i) << endl;
 		if(i%2==0) //similar to SyntaxCheck, but smaller scale
 		{
 			if(isSymbol(strv.at(i)))
