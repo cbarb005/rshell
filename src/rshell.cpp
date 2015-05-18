@@ -186,12 +186,13 @@ void pipeExecutor(vector<string> &vect)
 	//before loop, count pipe
 	int pipeCnt=pipeCounter(vect);
 	
-	bool success=false;
 	int*fds=new int[pipeCnt]; //dynamically allocated to avoid -pedantic error for variable array size
-	int cmdCnt=1;
+	int cmdCntr=1;
+	int cmdCnt=pipeCnt+1;
+	//open pipes
 	for(int i=0;i<pipeCnt;++i)
 	{
-		if((pipe(fds+i*2))==-1)	{ perror("pipe");
+		if((pipe(fds+i*2))==-1)	{ perror("pipe");}
 	}
 
 	for(unsigned i=0;i<vect.size();++i)
@@ -232,8 +233,7 @@ void pipeExecutor(vector<string> &vect)
 		else if (out) { fdIO=open(argStr.c_str(),O_WRONLY | O_TRUNC | O_CREAT,S_IRUSR | S_IWUSR); }
 		else if (app) { fdIO=open(argStr.c_str(),O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);}
 		if(-1==fdIO) { perror("open"); };
-
-
+		
 		//fork and attempt to execute using execvp
 		pid_t pid=fork();
 		if(pid==-1) { perror("fork"); }  //error with fork
@@ -249,32 +249,41 @@ void pipeExecutor(vector<string> &vect)
 				if ((dup2(fdIO,1))==-1) { perror("dup2"); }
 				if((close(fdIO))==-1) { perror("close");}
 			}
-			if(i>0) { dup2(fds[cmdCnt-2],0 ); close(fds[1]); cerr << "not first\n";}
-			if(i+1!=vect.size()) { dup2(fds[cmdCnt],1); close(fds[0]); cerr << "not last\n"; }
+			if(cmdCntr>1) //if there is input to be redirected
+			{
+				if ((dup2(fds[cmdCntr-2],0))==-1) { perror("dup2"); }
+				if ((close(fds[cmdCntr-2]))==-1) { perror("close"); }
+				for (int x=0; x<cmdCntr; ++x) {
+					close(fds[x]); }
+			}
 
-			//temp set to true
-			success=true;
+			if(cmdCntr!=cmdCnt) //if there is output to be redirected
+			{ 
+				if ((dup2(fds[cmdCntr],1))==-1) { perror("dup2"); }
+				if ((close(fds[cmdCntr]))==-1) { perror("close"); }
+				for (int x=0; x < cmdCntr; ++x) { close(fds[x]); }
+			}
 			if(execvp(argv[0],argv)==-1) {	perror("execvp");	}
-			//if fails, then before exiting, set success to false
-			success=false;
 			_exit(0);
 		}
 		else //parent
 		{	
-			//if(wait(0)==-1) { perror("wait"); }
+			++cmdCntr;
+
 			if(in) {  if ((close(fdIO))==-1) { perror("close");} }
 			if(out || app) {  if ((close(fdIO))==-1) { perror("close");} }
-			for(int j=0;j<pipeCnt*2;++j)
-			{  wait(0);	}
-			close(fds[0]); close(fds[1]);
+			
+			//for(int j=0; j<pipeCnt*2; ++j) { close(fds[j]); }
 
 		}
-		++cmdCnt;
+
 
 		//deallocates argv as well as strdup's dynamic memory
 		for(unsigned i=0;i<sz+1;++i) {	free(argv[i]);	}
 		delete [] argv;
 	}
+	//once done with loop
+	for(int j=0;j<pipeCnt*2;++j) { close(fds[j]); }
 	for(int j=0;j<=pipeCnt;++j)
 	{
 		wait(0);
@@ -387,18 +396,21 @@ int cmdSyntaxCheck(string &s)
 	commandParser(strv, s);
 	for(unsigned i=0;i<strv.size();++i)
 	{
-		if(i%2==0) //similar to SyntaxCheck, but smaller scale
+		if(i==0) //similar to SyntaxCheck, but smaller scale
 		{
 			if(isSymbol(strv.at(i)))
 			{ cerr << "Error: missing argument.\n"; return -1; }
 		}
-		else if(i%2!=0)
+		else if(i+1==strv.size())
 		{
-			if(!validSymbol(strv.at(i)))
-			{ cerr << "Error: not a valid operator.\n"; return -1; }
 			if(isSymbol(strv.at(i)) && i+i==strv.size())
 			{ cerr << "Error: missing argument.\n"; return -1;}
 		}
+		//else { 
+		//	if(isSymbol(strv.at(i)) && !validsymbol(strv.at(i)))
+		//	{ cerr << "error: not a valid operator.\n"; return -1; }
+		//	}
+
 	}
 
 	return 0;
