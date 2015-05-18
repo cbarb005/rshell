@@ -6,6 +6,8 @@ It can almost execute everything bash does, as long as it is already a ```/bin/`
 Compound commands are supported, but only with the ```&&```,```||```, and ```;``` connectors.
 It is worth noting that when stringing commands together, there is no inherent "order of operations"; commands connected by ```&&``` only rely on whether the previous argument succeeded or not, while ```||``` relies on its failure. 
 
+Input/output redirection and piping are supported to a limited extent as outlined in the Bugs & Other Documentation section below. 
+
 
 ##Installation
 ```
@@ -16,20 +18,18 @@ make
 bin/rshell
 ```
 
-##Bugs
-###rshell
-When incorrectly entering an argument such as `|| pwd`, the program will ignore the fact there is no argument preceding the connector and will execute the rest. This is not the case for `pwd ||`, which would produce an error message.
-
+##Bugs & Other Documentation
 
 Sometimes, a phantom empty line appears after executing a command. So far, this only seems to happen with compound commands, and not consistently.
 
+If not a valid command , such as ```lss || echo hello```, `perror` will return a message, but will NOT echo. This only occurs with this specific connector.
 
-If not a valid command, `perror` will return a message, but continue, even in a compound statement like `ls && pwdd && echo hello` and echo anyways.
-Similarly, a statement like ```pwd && && && && && && ls``` will also run both anyways, despite the missing arguments in between. Technically, doing nothing would easily succeed anyways, but if the expectation is that it would not run, then yes, it is a bug. 
+A statement like ```pwd && && && && && && ls``` will no longer run. Commands may no longer start or end with a connector. 
 
+Currently, input/output redirection only supports a single operation per command, unless a connector is used.
+Occasionally, when running ```wc < somefile.txt```, the space at the very beginning of the returned line is missing. 
 
-###ls
-When using -R, will not open directory, even if it is there.
-Output sometimes truncates a word and then continues it on the next line.
-Not really a bug, but month is output as number. 
+Piping and connectors are not simultaneously handled, so a command such as ```ls | ls && echo bye``` must be instead given as ```ls | ls``` and ```echo bye```.
+Multiple pipes as of this moment are not supported, and is a major bug in this program. 
+
 
