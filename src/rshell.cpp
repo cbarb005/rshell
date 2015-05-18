@@ -187,25 +187,18 @@ void pipeExecutor(vector<string> &vect)
 	int pipeCnt=pipeCounter(vect);
 	
 	bool success=false;
-	//int fds[2];
-	//if((pipe(fds))==-1)	{ perror("pipe"); }
+	int*fds=new int[pipeCnt]; //dynamically allocated to avoid -pedantic error for variable array size
+	int cmdCnt=1;
+	for(int i=0;i<pipeCnt;++i)
+	{
+		if((pipe(fds+i*2))==-1)	{ perror("pipe");
+	}
 
 	for(unsigned i=0;i<vect.size();++i)
 	{
 		if(isConnector(vect.at(i)))
 		{
-			if(vect.at(i)=="&&")
-			{ 
-				if(success==false) { return; }
-				else {  continue; }
-			}
-			if(vect.at(i)=="||")
-			{
-				if(success==false)	{ continue; }
-				else if(success==true )	{ return; }
-			}
 			if(vect.at(i)=="|") { continue; }
-			if(vect.at(i)==";")	{ continue;	}
 		}
 
 		//otherwise can be assumed to be a command
@@ -232,16 +225,14 @@ void pipeExecutor(vector<string> &vect)
 			}
 			else if(j==sz)	{ argv[j]=NULL; }//adds null at end
 		}
-
+		
+		//IO redirection
 		int fdIO;
 		if(in) { fdIO = open(argStr.c_str(), O_RDONLY);}
 		else if (out) { fdIO=open(argStr.c_str(),O_WRONLY | O_TRUNC | O_CREAT,S_IRUSR | S_IWUSR); }
 		else if (app) { fdIO=open(argStr.c_str(),O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);}
 		if(-1==fdIO) { perror("open"); };
 
-		//open pipe
-		int fds[2];
-		if((pipe(fds))==-1) { perror("pipe"); }
 
 		//fork and attempt to execute using execvp
 		pid_t pid=fork();
@@ -258,8 +249,8 @@ void pipeExecutor(vector<string> &vect)
 				if ((dup2(fdIO,1))==-1) { perror("dup2"); }
 				if((close(fdIO))==-1) { perror("close");}
 			}
-			if(i>0) { dup2(fds[1],1 ); close(fds[1]); }
-			if(i+1!=vect.size()) { dup2(fds[0],0); close(fds[0]); }
+			if(i>0) { dup2(fds[cmdCnt-2],0 ); close(fds[1]); cerr << "not first\n";}
+			if(i+1!=vect.size()) { dup2(fds[cmdCnt],1); close(fds[0]); cerr << "not last\n"; }
 
 			//temp set to true
 			success=true;
@@ -273,20 +264,23 @@ void pipeExecutor(vector<string> &vect)
 			//if(wait(0)==-1) { perror("wait"); }
 			if(in) {  if ((close(fdIO))==-1) { perror("close");} }
 			if(out || app) {  if ((close(fdIO))==-1) { perror("close");} }
+			for(int j=0;j<pipeCnt*2;++j)
+			{  wait(0);	}
 			close(fds[0]); close(fds[1]);
 
-
 		}
-		
+		++cmdCnt;
+
 		//deallocates argv as well as strdup's dynamic memory
 		for(unsigned i=0;i<sz+1;++i) {	free(argv[i]);	}
 		delete [] argv;
 	}
-	for(int j=0;j<pipeCnt*2;++j)
+	for(int j=0;j<=pipeCnt;++j)
 	{
 		wait(0);
 	}
-
+	
+	delete [] fds;
 	return;
 }
 
