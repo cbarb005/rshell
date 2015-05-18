@@ -25,6 +25,7 @@ void pipeExecutor(vector<string>& );
 void commandParser(vector<string> &v, string str);
 void ioType(string &s, bool&, bool&, bool&);
 bool hasPipe(vector<string> &v);
+int pipeCounter(vector<string> &v);
 void removeSymbol(vector<string> &v, string str,string &arg);
 
 typedef tokenizer<char_separator<char> > toknizer;
@@ -179,11 +180,15 @@ void executor(vector<string> &vect)
 	}
 	return;
 }
-
+//not an elegant solution, but could be merged with executor down the line
 void pipeExecutor(vector<string> &vect)
 {
-
+	//before loop, count pipe
+	int pipeCnt=pipeCounter(vect);
+	
 	bool success=false;
+	//int fds[2];
+	//if((pipe(fds))==-1)	{ perror("pipe"); }
 
 	for(unsigned i=0;i<vect.size();++i)
 	{
@@ -199,6 +204,7 @@ void pipeExecutor(vector<string> &vect)
 				if(success==false)	{ continue; }
 				else if(success==true )	{ return; }
 			}
+			if(vect.at(i)=="|") { continue; }
 			if(vect.at(i)==";")	{ continue;	}
 		}
 
@@ -233,6 +239,10 @@ void pipeExecutor(vector<string> &vect)
 		else if (app) { fdIO=open(argStr.c_str(),O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);}
 		if(-1==fdIO) { perror("open"); };
 
+		//open pipe
+		int fds[2];
+		if((pipe(fds))==-1) { perror("pipe"); }
+
 		//fork and attempt to execute using execvp
 		pid_t pid=fork();
 		if(pid==-1) { perror("fork"); }  //error with fork
@@ -248,6 +258,9 @@ void pipeExecutor(vector<string> &vect)
 				if ((dup2(fdIO,1))==-1) { perror("dup2"); }
 				if((close(fdIO))==-1) { perror("close");}
 			}
+			if(i>0) { dup2(fds[1],1 ); close(fds[1]); }
+			if(i+1!=vect.size()) { dup2(fds[0],0); close(fds[0]); }
+
 			//temp set to true
 			success=true;
 			if(execvp(argv[0],argv)==-1) {	perror("execvp");	}
@@ -257,9 +270,11 @@ void pipeExecutor(vector<string> &vect)
 		}
 		else //parent
 		{	
-			if(wait(0)==-1) { perror("wait"); }
+			//if(wait(0)==-1) { perror("wait"); }
 			if(in) {  if ((close(fdIO))==-1) { perror("close");} }
 			if(out || app) {  if ((close(fdIO))==-1) { perror("close");} }
+			close(fds[0]); close(fds[1]);
+
 
 		}
 		
@@ -267,10 +282,24 @@ void pipeExecutor(vector<string> &vect)
 		for(unsigned i=0;i<sz+1;++i) {	free(argv[i]);	}
 		delete [] argv;
 	}
-
+	for(int j=0;j<pipeCnt*2;++j)
+	{
+		wait(0);
+	}
 
 	return;
 }
+
+int pipeCounter(vector<string> &v)
+{
+	int cnt=0;
+	for(unsigned i=0;i<v.size();++i)
+	{
+		if(v.at(i)=="|") { ++cnt; }
+	}
+	return cnt;
+}
+
 void ioType(string &s, bool& in, bool& append, bool& out)
 {
 	vector<string> v;
