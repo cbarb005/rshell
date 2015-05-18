@@ -253,15 +253,12 @@ void pipeExecutor(vector<string> &vect)
 			{
 				if ((dup2(fds[cmdCntr-2],0))==-1) { perror("dup2"); }
 				if ((close(fds[cmdCntr-2]))==-1) { perror("close"); }
-				for (int x=0; x<cmdCntr; ++x) {
-					close(fds[x]); }
 			}
 
 			if(cmdCntr!=cmdCnt) //if there is output to be redirected
 			{ 
 				if ((dup2(fds[cmdCntr],1))==-1) { perror("dup2"); }
 				if ((close(fds[cmdCntr]))==-1) { perror("close"); }
-				for (int x=0; x < cmdCntr; ++x) { close(fds[x]); }
 			}
 			if(execvp(argv[0],argv)==-1) {	perror("execvp");	}
 			_exit(0);
@@ -276,7 +273,6 @@ void pipeExecutor(vector<string> &vect)
 			//for(int j=0; j<pipeCnt*2; ++j) { close(fds[j]); }
 
 		}
-
 
 		//deallocates argv as well as strdup's dynamic memory
 		for(unsigned i=0;i<sz+1;++i) {	free(argv[i]);	}
@@ -406,10 +402,6 @@ int cmdSyntaxCheck(string &s)
 			if(isSymbol(strv.at(i)) && i+i==strv.size())
 			{ cerr << "Error: missing argument.\n"; return -1;}
 		}
-		//else { 
-		//	if(isSymbol(strv.at(i)) && !validsymbol(strv.at(i)))
-		//	{ cerr << "error: not a valid operator.\n"; return -1; }
-		//	}
 
 	}
 
