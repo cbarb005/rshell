@@ -29,6 +29,7 @@ void commandParser(vector<string> &v, string str);
 void ioType(string &s, bool&, bool&, bool&);
 bool hasPipe(vector<string> &v);
 int pipeCounter(vector<string> &v);
+char* stringConverter(string &s);
 void removeSymbol(vector<string> &v, string str,string &arg);
 
 //sigHandler()
@@ -130,7 +131,9 @@ void executor(vector<string> &vect)
 		}
 		else if(isCD(vect.at(i))) 
 		{
-			if(cdCheck(vect.at(i))) { cdExecutor(vect.at(i)); }
+			if(cdCheck(vect.at(i)))
+			{ cdExecutor(vect.at(i));
+			continue; }
 		}
 		//otherwise can be assumed to be a command
 		bool in=false;
@@ -324,24 +327,24 @@ void cdExecutor(string &s)
 {
 	vector<string> v;
 	commandParser(v,s);
-	string request=v.at(1);
-
+	char* request=stringConverter(v.at(1));
+	//char* past=getenv("OLDPWD");
+	//char* curr=getenv("PWD");
+//	if(request=="-") { char* temp=curr; curr=past; past=temp; }
+	cout << "*" << request << "*";
 	return;
 }
 
 bool cdCheck(string &s)
 {
-	bool fine = false;   //checks that alleged cd command is valid
 	vector<string> v;
 	commandParser(v,s); 
-	int count = 0;
-	for(unsigned i=0;i<v.size();++i)
-	{	
-		if(v.at(0)=="cd") { fine = true; } //temporarily true
-		if(v.at(i)=="cd") { ++count;}
+	if(v.size()>2)
+	{ 
+		cerr << "Error: too many arguments passed in.\n";
+		return false;
 	}
-	if(count > 1) {return false; }        //if more than one cd found, false
-	else { return true; }         //only one "cd" found
+	else { return true;}
 }
 
 
@@ -359,7 +362,12 @@ void commandParser(vector<string> &v, string str)
 	}
 	return;
 }
-
+char* stringConverter(string &s)
+{
+	char* str=new char[s.size()+1];
+	strcpy(str,s.c_str());
+	return str;
+}
 void removeSymbol(vector<string> &v, string str,string &arg)
 {
 	//in order to pass into exec, parses symbols out, and get IO file
