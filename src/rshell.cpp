@@ -16,10 +16,13 @@ using namespace boost;
 
 int cmdSyntaxCheck(string &s);
 int syntaxCheck(vector<string>&vect);
+bool isCD(string &s);
 bool isConnector(string&);
 bool isSymbol(string&);
 bool isSemiColon(string &s);
 bool validSymbol(string&);
+void cdExecutor(string &s);
+bool cdCheck(string &s);
 void executor(vector<string> &vect);
 void pipeExecutor(vector<string>& );
 void commandParser(vector<string> &v, string str);
@@ -28,9 +31,11 @@ bool hasPipe(vector<string> &v);
 int pipeCounter(vector<string> &v);
 void removeSymbol(vector<string> &v, string str,string &arg);
 
+//sigHandler()
 typedef tokenizer<char_separator<char> > toknizer;
 int main()
 {
+	//sigaction();
 	while(1)
 	{
 		//prints simple prompt, gets user input
@@ -123,7 +128,10 @@ void executor(vector<string> &vect)
 			}
 			if(vect.at(i)==";")	{ continue;	}
 		}
-
+		else if(isCD(vect.at(i))) 
+		{
+			if(cdCheck(vect.at(i))) { cdExecutor(vect.at(i)); }
+		}
 		//otherwise can be assumed to be a command
 		bool in=false;
 		bool out=false;
@@ -289,6 +297,7 @@ void pipeExecutor(vector<string> &vect)
 	return;
 }
 
+
 int pipeCounter(vector<string> &v)
 {
 	int cnt=0;
@@ -311,6 +320,31 @@ void ioType(string &s, bool& in, bool& append, bool& out)
 	}
 	return;
 }
+void cdExecutor(string &s)
+{
+	vector<string> v;
+	commandParser(v,s);
+	string request=v.at(1);
+
+	return;
+}
+
+bool cdCheck(string &s)
+{
+	bool fine = false;   //checks that alleged cd command is valid
+	vector<string> v;
+	commandParser(v,s); 
+	int count = 0;
+	for(unsigned i=0;i<v.size();++i)
+	{	
+		if(v.at(0)=="cd") { fine = true; } //temporarily true
+		if(v.at(i)=="cd") { ++count;}
+	}
+	if(count > 1) {return false; }        //if more than one cd found, false
+	else { return true; }         //only one "cd" found
+}
+
+
 void commandParser(vector<string> &v, string str)
 {
 	char_separator<char> delim(" ");
@@ -325,6 +359,7 @@ void commandParser(vector<string> &v, string str)
 	}
 	return;
 }
+
 void removeSymbol(vector<string> &v, string str,string &arg)
 {
 	//in order to pass into exec, parses symbols out, and get IO file
@@ -448,6 +483,16 @@ bool isSymbol(string &s)
 		return false; //assume it's not an attempt at redirection symbol
 	}
 	return true;
+}
+
+bool isCD(string &s)
+{
+	size_t pos=s.find("cd");
+	if(pos !=string::npos && pos==0)
+	{
+		return true;
+	}
+	return false;
 }
 
 bool validSymbol(string &str)
