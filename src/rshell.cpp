@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <boost/tokenizer.hpp>
+//#include <boost/filesystem/operations.hpp>
 
 using namespace std;
 using namespace boost;
@@ -327,11 +328,30 @@ void cdExecutor(string &s)
 {
 	vector<string> v;
 	commandParser(v,s);
-	char* request=stringConverter(v.at(1));
-	//char* past=getenv("OLDPWD");
-	//char* curr=getenv("PWD");
-//	if(request=="-") { char* temp=curr; curr=past; past=temp; }
-	cout << "*" << request << "*";
+	char* home=getenv("HOME");
+	char* past=getenv("OLDPWD");
+	char* curr=getenv("PWD");
+	if(v.size()==1)
+	{
+		chdir(home); setenv("PWD",home,1); setenv("OLDPWD",curr,1);
+		return;
+	}
+	else if(v.at(1)=="-")
+	{
+		chdir(past); setenv("PWD",past,1); setenv("OLDPWD",curr,1);
+		return;
+	}
+	else
+	{	
+		char* temp=curr;
+		char* request=stringConverter(v.at(1));
+		strcat(curr,"/"); strcat(curr,request); 
+		errno=0; chdir(curr); 
+		if(errno==2) { cerr << "dne\n"; }
+		else if (errno==0) { setenv("PWD",curr,1); setenv("OLDPWD",temp,1);}
+	}
+
+
 	return;
 }
 
