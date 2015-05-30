@@ -331,24 +331,35 @@ void cdExecutor(string &s)
 	char* home=getenv("HOME");
 	char* past=getenv("OLDPWD");
 	char* curr=getenv("PWD");
-	if(v.size()==1)
+
+	if(v.size()==1)     //if command is just "cd", go to home dir
 	{
 		chdir(home); setenv("PWD",home,1); setenv("OLDPWD",curr,1);
 		return;
 	}
-	else if(v.at(1)=="-")
+	else if (v.at(1)==".") { return; } //do nothing, already in needed dir 
+	else if(v.at(1)=="-")  //switch current and past directory
 	{
-		chdir(past); setenv("PWD",past,1); setenv("OLDPWD",curr,1);
-		return;
+		chdir(past);
+		setenv("PWD",past,1); 
+		setenv("OLDPWD",curr,1);
 	}
-	else
+	else	
 	{	
-		char* temp=curr;
-		char* request=stringConverter(v.at(1));
-		strcat(curr,"/"); strcat(curr,request); 
-		errno=0; chdir(curr); 
-		if(errno==2) { cerr << "dne\n"; }
-		else if (errno==0) { setenv("PWD",curr,1); setenv("OLDPWD",temp,1);}
+		setenv("OLDPWD",curr,1); //set past to current
+		char* temp=curr; //temp string for strcat
+		char* request=stringConverter(v.at(1));   //requested dir
+		if (0!=strncmp(request,"/",1)) { strcat(temp,"/"); }
+		strcat(temp,request); 
+		errno=0;
+		chdir(temp); 
+		if(errno==2)
+		{	cerr << "No such directory exists.\n";
+			setenv("OLDPWD",past,1); 
+			errno=0; return;
+		}
+		else if (errno==0) { setenv("PWD",temp,1); }
+		else { perror("chdir"); }
 	}
 
 
