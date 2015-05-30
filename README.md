@@ -38,4 +38,4 @@ Multiple pipes as of this moment are not supported, and is a major bug in this p
 ```cd``` has a bug in which after a nonexistent directory passed in. 
 The program returns an error message as expected, but afterwards, attempts such as ```cd ..```,```cd /```, and  ```cd dir``` also return the same error, until the command ```cd -``` is used, thus restoring all the previous commands.
 
-
+Unfortunately, ```^C``` signal not functional as of right now.
