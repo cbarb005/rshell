@@ -10,8 +10,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include <limits.h>
+#include <signal.h>
 #include <boost/tokenizer.hpp>
-//#include <boost/filesystem/operations.hpp>
 
 using namespace std;
 using namespace boost;
@@ -34,16 +34,21 @@ bool hasPipe(vector<string> &v);
 int pipeCounter(vector<string> &v);
 char* stringConverter(string &s);
 void removeSymbol(vector<string> &v, string str,string &arg);
+void handleSig(int sig);
 
-//sigHandler()
 typedef tokenizer<char_separator<char> > toknizer;
 int main()
 {
-	//sigaction();
+	struct sigaction sig_act;
+	sig_act.sa_handler=handleSig;
+	sig_act.sa_flags=SA_RESTART;
+	if(-1==sigaction(SIGINT,&sig_act,NULL)) { perror("sigaction");}
+
 	while(1)
 	{
 		//prints simple prompt, gets user input
 		prompt();
+		cin.clear();
 		string userinput;
 		getline(cin,userinput);
 		
@@ -171,9 +176,13 @@ void executor(vector<string> &vect)
 
 		//fork and attempt to execute using execvp
 		pid_t pid=fork();
+	
+		int status;
+		int cid=0;
 		if(pid==-1) { perror("fork"); }  //error with fork
 		else if(pid==0) //child
 		{
+			cid=pid;
 			if(in) { dup2(fdIO,0); if(-1==(close(fdIO))) { perror("close");}  }
 			if(out || app) { dup2(fdIO,1);  if(-1==(close(fdIO))) { perror("close");} }
 			success = true; //"temporary" based on execvp's success or failure
@@ -183,7 +192,15 @@ void executor(vector<string> &vect)
 		}
 		else //parent
 		{	
-			if(wait(0)==-1) { perror("wait"); }
+			//do { w=wait(&status); } while(w==-1 && errno==EINTR);
+			if( -1==wait(&status)) { perror("wait"); }
+			if(WIFSIGNALED(status))
+			{
+				if(WTERMSIG(status)==SIGINT)
+				{
+					kill(cid,SIGINT);
+				}
+			}
 			if(in) {  close(fdIO); }
 			if(out || app) {  close(fdIO); }
 		}
@@ -562,4 +579,12 @@ void prompt()
 	}
 	cout << cwdstr << " $ ";
 	return;
+}
+void handleSig(int signum) 
+{
+	if(0!=getpid()) //if a child
+	{
+		kill(getpid(),SIGINT);
+	}
+
 }
