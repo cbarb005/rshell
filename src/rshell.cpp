@@ -9,12 +9,14 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#include <limits.h>
 #include <boost/tokenizer.hpp>
 //#include <boost/filesystem/operations.hpp>
 
 using namespace std;
 using namespace boost;
 
+void prompt();
 int cmdSyntaxCheck(string &s);
 int syntaxCheck(vector<string>&vect);
 bool isCD(string &s);
@@ -41,7 +43,7 @@ int main()
 	while(1)
 	{
 		//prints simple prompt, gets user input
-		cout << "$ ";
+		prompt();
 		string userinput;
 		getline(cin,userinput);
 		
@@ -355,14 +357,12 @@ void cdExecutor(string &s)
 		chdir(temp); 
 		if(errno==2)
 		{	cerr << "No such directory exists.\n";
-			setenv("OLDPWD",past,1); 
+			setenv("OLDPWD",past,1); //revert back to past, reversing change
 			errno=0; return;
 		}
-		else if (errno==0) { setenv("PWD",temp,1); }
+		else if (errno==0) { setenv("PWD",temp,1); } //continues change
 		else { perror("chdir"); }
 	}
-
-
 	return;
 }
 
@@ -545,4 +545,21 @@ bool validSymbol(string &str)
 	else if(str==">>") {return true;}
 	//else if(str=="<<<") {return true;} //if time allows
 	return false;
+}
+void prompt()
+{
+	string t="~";
+	char buffer[PATH_MAX];
+	char* cwd=getcwd(buffer, PATH_MAX);
+	char* home=getenv("HOME");
+	string cwdstr(cwd);
+	string homestr(home);
+	size_t pos = cwdstr.find(homestr);
+	if(pos != string::npos)
+	{
+		int sz=homestr.size();
+		cwdstr.replace(0,sz,t);
+	}
+	cout << cwdstr << " $ ";
+	return;
 }
