@@ -22,9 +22,9 @@
 
 using namespace std;
 
-void dirStream(set<char>&,char*);
-void formatNormal(vector<char*> &);
-void formatLong(vector<char*> &);
+void dirStream(set<char>&, char*);
+void formatNormal( vector<char*> &);
+void formatLong( vector<char*> &);
 void setflags(set<char>&,bool&,bool&,bool&);
 void totalSize(vector<char*>&, blkcnt_t&);
 int longestName(vector<char*>&,int&);
@@ -34,11 +34,16 @@ bool isHiddenFile(char*); //any hidden file
 bool isFlag(char*);
 void setMap(map<int,string> &month);
 bool compare_char(char* lhs, char*rhs);
+void fileHandle(set<char> &flagSet, char* file);
+bool isDirectory(char*);
+bool isExecutable(char*);
 
 int main(int argc, char**argv)
 {	
 	vector<char*> dirc;	
 	set<char> flags;
+
+	vector<char*> file; //for passing in file as parameter
 
 	for(int i=1; i<argc;++i)
 	{
@@ -61,7 +66,7 @@ int main(int argc, char**argv)
 		}
 		if(buf.st_mode & S_IFREG)
 		{
-			cout << argv[i]; //FIIIIIIIIIIIIIIIIIIIIXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+			file.push_back(argv[i]);
 		}
 
 	}
@@ -71,27 +76,57 @@ int main(int argc, char**argv)
 		char cwd[]=".";
 		dirc.push_back(cwd); //assume current working directory
 	}
-	
-	for(unsigned i=0; i<dirc.size();++i) 
+
+	if(file.size() > 0)
 	{
-		dirStream(flags,dirc[i]);
+		for(unsigned i=0; i<file.size();++i)
+		{
+			fileHandle(flags,file[i]);
+		}
+		
 	}
+	else if(dirc.size() > 0)
+	{
+		for(unsigned i=0; i<dirc.size();++i) 
+		{	
+			dirStream(flags,dirc[i]);
+		}
+	}
+	
 	return 0;
 }
 
-void dirStream(set<char> &flagSet, char* dirc)
+void fileHandle(set<char> &flagSet, char* file)
 {
+	bool a,l,R;
+	setflags(flagSet,a,l,R);
 
+	vector<char*> outputFile; //will hold single file
+	outputFile.push_back(file);
+
+	if(l)
+	{
+		formatLong(outputFile);
+	}
+	else
+	{
+		formatNormal(outputFile);
+	}
+	return;
+}
+
+void dirStream(set<char> &flagSet,char* dirc)
+{
+	
 	DIR *dirptr;
 	struct dirent *info;
-
+	
 	bool a,l,R;
 
 	setflags(flagSet,a,l,R); //"activates" bools based on if flag is in set
 
 	vector<char*> output;
 	vector<char*> recursiVect;
-
 
 	if(R)
 	{
@@ -118,15 +153,19 @@ void dirStream(set<char> &flagSet, char* dirc)
 			string newPath=path+"/"+temp;
 
 			//adds directory to queue of directories to "recurse" through
-			char* v= const_cast<char*>(newPath.c_str());
-			cerr << "new path: " << newPath << endl;
+
+			char* v= (const_cast<char*>(newPath.c_str()));
+			//cerr << "new path: " << newPath << endl;
+			//cerr << v <<  endl;
 			recursiVect.push_back(v);
-			//dirq.push(info->d_name);
 		}
 	}
 
+	//sort(output.begin(),output.end(),compare_char);
+
 	if(!l) { formatNormal(output); } //if no -l passed in
 	else { formatLong(output); }
+
 	if(errno != 0)
 	{
 		perror("readdir");
@@ -137,16 +176,13 @@ void dirStream(set<char> &flagSet, char* dirc)
 	}
 	for(unsigned i=0;i<recursiVect.size();++i)
 	{
+		cout << "vect: " << recursiVect.at(i) << endl;
 		dirStream(flagSet,recursiVect.at(i));
 	}
-//	while(!dirq.empty())
-	{
-//		dirc=dirq.front();
-//		dirq.pop();
-//		dirStream(flagSet,dirc);
-	}
+	
 	return;
 }
+
 void formatLong(vector<char*> &v)
 {
 	//get total for output
@@ -155,7 +191,7 @@ void formatLong(vector<char*> &v)
 	//total will be based off GNU convention
 	cout << "total: " << sum << endl;
 
-	sort(v.begin(),v.end(),compare_char);
+	
 	for(unsigned i=0;i<v.size();++i)
 	{
 
@@ -213,38 +249,45 @@ void formatLong(vector<char*> &v)
 
 		//time(&mtime);
 		if(NULL==(localtime_r(&buf.st_mtime,&timep)));
-		cout << setw(3) << month[timep.tm_mon] << " "
-			 << setw(3) << setfill(' ') << timep.tm_mday << " ";
+		cout << setw(3) << month[timep.tm_mon] << " ";
+		cout << setw(3) << setfill(' ') << timep.tm_mday << " ";
 		cout << setw(2) << setfill('0') << timep.tm_hour << ":" << setw(2) << setfill('0') << timep.tm_min << " ";
 		//filename
 		cout << v.at(i);
 		cout << endl;
+		cout << flush;
+
 	}	
 		
-
+	cout << endl;
 	return;
 }
 
 void formatNormal(vector<char*> &v)
 {
 	int sum = 0;
-	int maxWidth = longestName(v,sum);
-	if(sum < 55)
+	int display=100;
+	int max = longestName(v,sum);
+	//string blue = "\e[34m";
+	//string green = "\e[32m";
+	//string grey = "\e[100m";
+	//string clear = "\x1b[0m";
+	
+	
+	for(unsigned i=0; i<v.size();++i)
 	{
-		for(unsigned i=0; i<v.size();++i)
+		display-=max;
+		if(display < max)
 		{
-			cout <<  v.at(i) << "  " ;
+			cout << endl;
+			display=100;
 		}
-		cout << endl;
+		
+		cout << left << setw(max+2) << v.at(i);
 	}
-	else
-	{
-		for(unsigned i=0; i<v.size();++i)
-		{
-			cout << left << setw(maxWidth+2) << v.at(i);
-		}
-		cout << endl;
-	}
+
+	cout << endl;
+
 	return;
 }
 void totalSize(vector<char*> &v,blkcnt_t& total) //will get total for -l
@@ -336,6 +379,35 @@ bool isDot(char* c)
 		return true;
 	}
 	else { return false;}
+}
+
+bool isDirectory(char *c)
+{
+	struct stat buf;
+
+	if(-1==stat(c,&buf)) { perror("stat"); }
+	if(buf.st_mode & S_IFDIR)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+bool isExecutable(char *c)
+{
+	struct stat buf;
+
+	if(-1==stat(c,&buf)) { perror("stat"); }
+	if(buf.st_mode & S_IXUSR)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool isHiddenFile(char* c)
