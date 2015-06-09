@@ -1,7 +1,7 @@
 #for now, makefile only has rshell to make
 
 VPATH = src
-FLAGS = -Wall -Werror -ansi -pedantic
+FLAGS = -Wall -Werror  -pedantic
 
 all: bin  rshell cp ls
 

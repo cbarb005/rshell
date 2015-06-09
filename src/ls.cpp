@@ -81,7 +81,7 @@ int main(int argc, char**argv)
 	{
 		for(unsigned i=0; i<file.size();++i)
 		{
-			fileHandle(flags,file[i]);
+			fileHandle(flags,file.at(i));
 		}
 		
 	}
@@ -89,7 +89,7 @@ int main(int argc, char**argv)
 	{
 		for(unsigned i=0; i<dirc.size();++i) 
 		{	
-			dirStream(flags,dirc[i]);
+			dirStream(flags,dirc.at(i));
 		}
 	}
 	
