@@ -14,10 +14,11 @@
 #include <string>
 #include <algorithm>
 #include <vector>
-#include <queue>
+#include <map>
 #include <set>
 #include <ios>
 #include <iomanip>
+#include <ctype.h>
 
 using namespace std;
 
@@ -31,6 +32,8 @@ int flagID(char*,set<char>&);
 bool isDot(char*); //specifically for ./ or ../
 bool isHiddenFile(char*); //any hidden file
 bool isFlag(char*);
+void setMap(map<int,string> &month);
+bool compare_char(char* lhs, char*rhs);
 
 int main(int argc, char**argv)
 {	
@@ -50,16 +53,15 @@ int main(int argc, char**argv)
 
 		}
 
-		stat(argv[i],&buf);
+		if(-1==(stat(argv[i],&buf))) { perror("stat"); }
 		//if it is a directory
 		if(buf.st_mode & S_IFDIR)
 		{
 			dirc.push_back(argv[i]); //captures directory
-			cout << "main 2\n";
 		}
 		if(buf.st_mode & S_IFREG)
 		{
-			cout << argv[i]; //will just echo file to screen
+			cout << argv[i]; //FIIIIIIIIIIIIIIIIIIIIXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 		}
 
 	}
@@ -77,15 +79,19 @@ int main(int argc, char**argv)
 	return 0;
 }
 
-void dirStream(set<char> &flagSet,char* dirc)
+void dirStream(set<char> &flagSet, char* dirc)
 {
+
 	DIR *dirptr;
 	struct dirent *info;
 
 	bool a,l,R;
+
 	setflags(flagSet,a,l,R); //"activates" bools based on if flag is in set
-	queue<char*> dirq;
+
 	vector<char*> output;
+	vector<char*> recursiVect;
+
 
 	if(R)
 	{
@@ -102,14 +108,23 @@ void dirStream(set<char> &flagSet,char* dirc)
 		if(isHiddenFile(info->d_name) && !a)
 		{ continue; } //skip over dot files
 
-		output.push_back(info->d_name);	
+		string path(dirc);
+		string temp(info->d_name); //for recursive function
 
+		output.push_back(info->d_name);	
+		
 		if(R && info->d_type==DT_DIR && !isDot(info->d_name))
 		{	
+			string newPath=path+"/"+temp;
+
 			//adds directory to queue of directories to "recurse" through
-			dirq.push(info->d_name);
+			char* v= const_cast<char*>(newPath.c_str());
+			cerr << "new path: " << newPath << endl;
+			recursiVect.push_back(v);
+			//dirq.push(info->d_name);
 		}
 	}
+
 	if(!l) { formatNormal(output); } //if no -l passed in
 	else { formatLong(output); }
 	if(errno != 0)
@@ -120,11 +135,15 @@ void dirStream(set<char> &flagSet,char* dirc)
 	{
 		perror("closedir");
 	}
-	while(!dirq.empty())
+	for(unsigned i=0;i<recursiVect.size();++i)
 	{
-		dirc=dirq.front();
-		dirq.pop();
-		dirStream(flagSet,dirc);
+		dirStream(flagSet,recursiVect.at(i));
+	}
+//	while(!dirq.empty())
+	{
+//		dirc=dirq.front();
+//		dirq.pop();
+//		dirStream(flagSet,dirc);
 	}
 	return;
 }
@@ -136,9 +155,15 @@ void formatLong(vector<char*> &v)
 	//total will be based off GNU convention
 	cout << "total: " << sum << endl;
 
+	sort(v.begin(),v.end(),compare_char);
 	for(unsigned i=0;i<v.size();++i)
 	{
+
+		map<int,string> month;
+		setMap(month);
+
 		struct stat buf;
+
 		if(-1==(stat(v.at(i),&buf)))
 		{
 			perror("stat");
@@ -180,7 +205,7 @@ void formatLong(vector<char*> &v)
 		cout << grp->gr_name << " ";
 
 		//size
-		cout << setw(6) << buf.st_size << " ";
+		cout << setw(6) << setfill(' ') << buf.st_size << " ";
 		
 		//time
 		//time_t mtime=buf.st_mtime;
@@ -188,9 +213,9 @@ void formatLong(vector<char*> &v)
 
 		//time(&mtime);
 		if(NULL==(localtime_r(&buf.st_mtime,&timep)));
-		cout << setw(3) << timep.tm_mon << " "
-			 << setw(3) << timep.tm_mday << " ";
-		cout << timep.tm_hour << ":" << timep.tm_min << " ";
+		cout << setw(3) << month[timep.tm_mon] << " "
+			 << setw(3) << setfill(' ') << timep.tm_mday << " ";
+		cout << setw(2) << setfill('0') << timep.tm_hour << ":" << setw(2) << setfill('0') << timep.tm_min << " ";
 		//filename
 		cout << v.at(i);
 		cout << endl;
@@ -203,7 +228,7 @@ void formatLong(vector<char*> &v)
 void formatNormal(vector<char*> &v)
 {
 	int sum = 0;
-	int width = longestName(v,sum);
+	int maxWidth = longestName(v,sum);
 	if(sum < 55)
 	{
 		for(unsigned i=0; i<v.size();++i)
@@ -216,7 +241,7 @@ void formatNormal(vector<char*> &v)
 	{
 		for(unsigned i=0; i<v.size();++i)
 		{
-			cout << left << setw(width+2) << v.at(i);
+			cout << left << setw(maxWidth+2) << v.at(i);
 		}
 		cout << endl;
 	}
@@ -339,4 +364,28 @@ bool isFlag(char *c)
 	{
 		return true;
 	}
+}
+
+void setMap(map<int,string> &month)
+{
+	month[1] = "Jan";
+	month[2] = "Feb";
+	month[3] = "Mar";
+	month[4] = "Apr";
+	month[5] = "May";
+	month[6] = "Jun";
+	month[7] = "Jul";
+	month[8] = "Aug";
+	month[9] = "Sep";
+	month[10] = "Oct";
+	month[11] = "Nov";
+	month[12] = "Dec";
+
+	return;
+
+}
+
+bool compare_char(char* lhs, char*rhs)
+{
+	return (tolower(lhs[0]) < tolower(rhs[0]));
 }
