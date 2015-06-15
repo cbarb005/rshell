@@ -23,8 +23,8 @@
 using namespace std;
 
 void dirStream(set<char>&, char*);
-void formatNormal( vector<char*> &);
-void formatLong( vector<char*> &);
+void formatNormal( vector<char*> );
+void formatLong(vector<char*> &);
 void setflags(set<char>&,bool&,bool&,bool&);
 void totalSize(vector<char*>&, blkcnt_t&);
 int longestName(vector<char*>&,int&);
@@ -38,6 +38,7 @@ void fileHandle(set<char> &flagSet, char* file);
 bool isDirectory(char*);
 bool isExecutable(char*);
 
+bool color=false;  //for color options
 int main(int argc, char**argv)
 {	
 	vector<char*> dirc;	
@@ -71,10 +72,18 @@ int main(int argc, char**argv)
 
 	}
 
-	if(dirc.size()==0) //if no directory was specifically passed in
+	if(dirc.size()==0 && file.empty()) //if no directory was specifically passed in
 	{
 		char cwd[]=".";
 		dirc.push_back(cwd); //assume current working directory
+	}
+
+	if(dirc.size() > 0)
+	{
+		for(unsigned i=0; i<dirc.size();++i) 
+		{	
+			dirStream(flags,dirc.at(i));
+		}
 	}
 
 	if(file.size() > 0)
@@ -85,36 +94,12 @@ int main(int argc, char**argv)
 		}
 		
 	}
-	else if(dirc.size() > 0)
-	{
-		for(unsigned i=0; i<dirc.size();++i) 
-		{	
-			dirStream(flags,dirc.at(i));
-		}
-	}
 	
 	return 0;
 }
 
-void fileHandle(set<char> &flagSet, char* file)
-{
-	bool a,l,R;
-	setflags(flagSet,a,l,R);
 
-	vector<char*> outputFile; //will hold single file
-	outputFile.push_back(file);
-
-	if(l)
-	{
-		formatLong(outputFile);
-	}
-	else
-	{
-		formatNormal(outputFile);
-	}
-	return;
-}
-
+	
 void dirStream(set<char> &flagSet,char* dirc)
 {
 	
@@ -125,8 +110,8 @@ void dirStream(set<char> &flagSet,char* dirc)
 
 	setflags(flagSet,a,l,R); //"activates" bools based on if flag is in set
 
+	vector<char*> rVect;
 	vector<char*> output;
-	vector<char*> recursiVect;
 
 	if(R)
 	{
@@ -138,6 +123,7 @@ void dirStream(set<char> &flagSet,char* dirc)
 		exit(1);
 	}
 	errno=0;
+
 	while(NULL != (info=readdir(dirptr)))
 	{	
 		if(isHiddenFile(info->d_name) && !a)
@@ -146,25 +132,22 @@ void dirStream(set<char> &flagSet,char* dirc)
 		string path(dirc);
 		string temp(info->d_name); //for recursive function
 
-		output.push_back(info->d_name);	
-		
 		if(R && info->d_type==DT_DIR && !isDot(info->d_name))
 		{	
-			string newPath=path+"/"+temp;
-
-			//adds directory to queue of directories to "recurse" through
+			string newPath= path + "/" + temp;
 
 			char* v= (const_cast<char*>(newPath.c_str()));
-			//cerr << "new path: " << newPath << endl;
-			//cerr << v <<  endl;
-			recursiVect.push_back(v);
+			rVect.push_back(v);
 		}
+
+		output.push_back(info->d_name);
+
 	}
 
-	//sort(output.begin(),output.end(),compare_char);
+	sort(output.begin(),output.end(),compare_char);
 
 	if(!l) { formatNormal(output); } //if no -l passed in
-	else { formatLong(output); }
+	else if(l) { formatLong(output); }
 
 	if(errno != 0)
 	{
@@ -174,16 +157,20 @@ void dirStream(set<char> &flagSet,char* dirc)
 	{
 		perror("closedir");
 	}
-	for(unsigned i=0;i<recursiVect.size();++i)
+	if (!rVect.empty() && R)
 	{
-		cout << "vect: " << recursiVect.at(i) << endl;
-		dirStream(flagSet,recursiVect.at(i));
+		for(unsigned i=0;i<rVect.size();++i)
+		{
+			dirStream(flagSet,rVect.at(i));
+
+		}
 	}
 	
 	return;
 }
 
-void formatLong(vector<char*> &v)
+
+void formatLong( vector<char*> &v)
 {
 	//get total for output
 	blkcnt_t sum=0;
@@ -194,13 +181,12 @@ void formatLong(vector<char*> &v)
 	
 	for(unsigned i=0;i<v.size();++i)
 	{
-
-		map<int,string> month;
-		setMap(month);
+		char *temp=new char[16];
+		strcpy(temp,v.at(i));
 
 		struct stat buf;
 
-		if(-1==(stat(v.at(i),&buf)))
+		if(-1==(stat(temp,&buf)))
 		{
 			perror("stat");
 		}
@@ -247,49 +233,67 @@ void formatLong(vector<char*> &v)
 		//time_t mtime=buf.st_mtime;
 		struct tm timep;
 
+		map<int,string> month;
+		setMap(month);
+
 		//time(&mtime);
 		if(NULL==(localtime_r(&buf.st_mtime,&timep)));
 		cout << setw(3) << month[timep.tm_mon] << " ";
 		cout << setw(3) << setfill(' ') << timep.tm_mday << " ";
-		cout << setw(2) << setfill('0') << timep.tm_hour << ":" << setw(2) << setfill('0') << timep.tm_min << " ";
+		cout << setw(2) << setfill('0') << timep.tm_hour;
+		cout << ":" << setw(2) << setfill('0') << timep.tm_min << " ";
+		
+	
+		if(color)
+		{
+			if(isHiddenFile(v.at(i))) { cout << "\x1b[100m" ; }
+			if(isDirectory(v.at(i))) { cout << "\x1b[34m";  }
+			else if(isExecutable(v.at(i))) { cout << "\x1b[32m";  }
+		}
+
 		//filename
 		cout << v.at(i);
+		if(color) { cout << "\x1b[0m";  }
 		cout << endl;
-		cout << flush;
-
+		delete [] temp;
 	}	
 		
 	cout << endl;
 	return;
 }
 
-void formatNormal(vector<char*> &v)
+void formatNormal(vector<char*> v)
 {
 	int sum = 0;
 	int display=100;
 	int max = longestName(v,sum);
-	//string blue = "\e[34m";
-	//string green = "\e[32m";
-	//string grey = "\e[100m";
-	//string clear = "\x1b[0m";
-	
 	
 	for(unsigned i=0; i<v.size();++i)
 	{
-		display-=max;
+		display= display - (max+6);
 		if(display < max)
 		{
 			cout << endl;
 			display=100;
 		}
-		
-		cout << left << setw(max+2) << v.at(i);
+		if(color)
+		{
+			if(isHiddenFile(v.at(i))) { cout << "\x1b[100m"; }
+			if(isDirectory(v.at(i))) { cout <<  "\x1b[34m"; }
+			else if(isExecutable(v.at(i))) { cout << "\x1b[32m"; }
+		}
+
+		cout << left << setw(max+8) << v.at(i);
+
+		if(color) { cout << "\x1b[0m"; }
+
 	}
 
 	cout << endl;
 
 	return;
 }
+
 void totalSize(vector<char*> &v,blkcnt_t& total) //will get total for -l
 {
 	for(unsigned i=0;i<v.size();++i)
@@ -322,6 +326,26 @@ int longestName(vector<char*> &v,int& sum)
 	}
 	return max;
 }
+
+void fileHandle(set<char> &flagSet, char* file)
+{
+	bool a,l,R;
+	setflags(flagSet,a,l,R);
+
+	vector<char*> outputFile; //will hold single file
+	outputFile.push_back(file);
+
+	if(l)
+	{
+		formatLong(outputFile);
+	}
+	else
+	{
+		formatNormal(outputFile);
+	}
+	return;
+}
+
 void setflags(set<char> &flags,bool& a,bool& l,bool& R)
 {
 	if(flags.find('a') != flags.end())	{	a=true;	}
@@ -332,7 +356,7 @@ void setflags(set<char> &flags,bool& a,bool& l,bool& R)
 
 	if(flags.find('R') != flags.end())	{	R=true;	}
 	else { R=false; }
-
+	
 	return;
 }
 int flagID(char *flag, set<char> &flagSet)
@@ -362,6 +386,12 @@ int flagID(char *flag, set<char> &flagSet)
 		flagSet.insert('R');
 		++valid;
 	}		
+	size_t pos4=str.find("cc");
+	if(pos4 != string::npos)
+	{
+		color=true;
+		valid+=2;
+	}
 	if(valid != str.size())
 	{	
 		cerr << "Invalid flag detected.\n";
@@ -438,7 +468,7 @@ bool isFlag(char *c)
 	}
 }
 
-void setMap(map<int,string> &month)
+void setMap(map< int,string> &month)
 {
 	month[1] = "Jan";
 	month[2] = "Feb";

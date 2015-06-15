@@ -1,12 +1,14 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <stack>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <pwd.h>
 #include <fcntl.h>
 #include <string.h>
 #include <limits.h>
@@ -23,6 +25,8 @@ bool isCD(string &s);
 bool isConnector(string&);
 bool isSymbol(string&);
 bool isSemiColon(string &s);
+bool isFG(string &s);
+bool isBG(string &s);
 bool validSymbol(string&);
 void cdExecutor(string &s);
 bool cdCheck(string &s);
@@ -34,15 +38,33 @@ bool hasPipe(vector<string> &v);
 int pipeCounter(vector<string> &v);
 char* stringConverter(string &s);
 void removeSymbol(vector<string> &v, string str,string &arg);
-void handleSig(int sig);
+void handleSig(int signum);
+void handleStop(int signum);
+void handleChild(int signum);
 
+stack<int> stopped; //stores pid's of processes that have been stopped
+bool success=false;
+bool bgCalled=false;
+bool fgCalled=false;
+int cid=0;
+int currid;
 typedef tokenizer<char_separator<char> > toknizer;
 int main()
 {
 	struct sigaction sig_act;
+	struct sigaction sig_stp;
+	struct sigaction sig_chld;
+
 	sig_act.sa_handler=handleSig;
+	sig_stp.sa_handler=handleStop;
+	sig_chld.sa_handler=handleChild;
+
 	sig_act.sa_flags=SA_RESTART;
+	sig_stp.sa_flags=SA_RESTART;
 	if(-1==sigaction(SIGINT,&sig_act,NULL)) { perror("sigaction");}
+	if(-1==sigaction(SIGTSTP, &sig_stp,NULL)) { perror("sigaction");}
+	if(-1==sigaction(SIGCHLD, &sig_chld,NULL)) { perror("sigaction");}
+
 
 	while(1)
 	{
@@ -119,8 +141,7 @@ int main()
 
 void executor(vector<string> &vect)
 {
-	bool success=true;
-
+	
 	for(unsigned i=0;i<vect.size();++i)
 	{
 		if(isConnector(vect.at(i)))
@@ -143,6 +164,35 @@ void executor(vector<string> &vect)
 			{ cdExecutor(vect.at(i));
 			continue; }
 		}
+		else if(isFG(vect.at(i)))
+		{
+			if(stopped.size()>0)
+			{
+				fgCalled=true;
+				if(-1==(kill(stopped.top(),SIGCONT)))
+				{ perror("kill"); }
+				currid=stopped.top();
+				stopped.pop();
+			}
+			else { cerr << "Error: no process to foreground.\n"; }
+			continue;
+		}
+		else if(isBG(vect.at(i)))
+		{
+			if(stopped.size()>0)
+			{	
+				bgCalled=true;
+				if(-1==(kill(stopped.top(),SIGCONT)))
+				{ perror("kill"); }
+				stopped.pop();
+			}
+			else
+			{
+				cerr << "Error: no process to background.\n";
+			}
+			continue;
+		}
+
 		//otherwise can be assumed to be a command
 		bool in=false;
 		bool out=false;
@@ -158,7 +208,6 @@ void executor(vector<string> &vect)
 		//store vector size for array allocation
 		const size_t sz=argvect.size();
 		char**argv=new char*[sz+1]; 
-		
 		for(unsigned j=0;j<sz+1;++j)
 		{
 			if(j<sz)//using strdup since it dynamically allocates on its own
@@ -168,41 +217,65 @@ void executor(vector<string> &vect)
 			else if(j==sz)	{ argv[j]=NULL; }//adds null at end
 		}
 
-		int fdIO;
-		if(in) { fdIO = open(argStr.c_str(), O_RDONLY);}
-		else if (out) { fdIO=open(argStr.c_str(),O_WRONLY | O_TRUNC | O_CREAT,S_IRUSR | S_IWUSR); }
-		else if (app) { fdIO=open(argStr.c_str(),O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);}
-		if(-1==fdIO) { perror("open"); };
+		int fdIO=0;
+		if(in)
+		{ 
+			fdIO = open(argStr.c_str(), O_RDONLY);
+			if (fdIO==-1) { perror("open");}
+		}
+		else if (out)
+		{ 
+			fdIO=open(argStr.c_str(),O_WRONLY | O_TRUNC | O_CREAT,S_IRUSR | S_IWUSR);
+			if(-1==fdIO) { perror("open"); }
+		}
+		else if (app)
+		{
+			fdIO=open(argStr.c_str(),O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
+			if(-1==fdIO) { perror("open"); }
+		}
 
 		//fork and attempt to execute using execvp
 		pid_t pid=fork();
-	
 		int status;
-		int cid=0;
 		if(pid==-1) { perror("fork"); }  //error with fork
 		else if(pid==0) //child
 		{
-			cid=pid;
-			if(in) { dup2(fdIO,0); if(-1==(close(fdIO))) { perror("close");}  }
-			if(out || app) { dup2(fdIO,1);  if(-1==(close(fdIO))) { perror("close");} }
-			success = true; //"temporary" based on execvp's success or failure
-			if(execvp(argv[0],argv)==-1) {	perror("execvp");	}
-			success = false;  //if it fails, set it back to false
-			_exit(0);
+
+			if(in)
+			{
+				if(-1==(dup2(fdIO,0))) { perror("dup2"); }
+				if(-1==(close(fdIO))) { perror("close");}
+			}
+			if(out || app)
+			{
+				if(-1==(dup2(fdIO,1))) { perror("dup2"); }
+				if(-1==(close(fdIO))) { perror("close");}
+			}
+			
+			if(execvp(argv[0],argv)==-1) {  perror("execvp");  }
+			//if it fails, set it back to false
+			_exit(1);
 		}
 		else //parent
 		{	
-			//do { w=wait(&status); } while(w==-1 && errno==EINTR);
-			if( -1==wait(&status)) { perror("wait"); }
-			if(WIFSIGNALED(status))
+			cid=pid;
+			
+			int w=waitpid(pid,&status,WUNTRACED);
+			if(w==-1)
 			{
-				if(WTERMSIG(status)==SIGINT)
-				{
-					kill(cid,SIGINT);
-				}
+				perror("wait");
 			}
-			if(in) {  close(fdIO); }
-			if(out || app) {  close(fdIO); }
+			if (WIFEXITED(status) > 0)
+			{
+				if (WEXITSTATUS(status) == 0) {  success=true;}
+				else	{ success=false; }
+
+			}				
+
+			if(in) {  if(-1==close(fdIO)) { perror("close"); } }
+			if(out || app) {  if(-1==close(fdIO)) {perror("close"); } }
+
+
 		}
 		
 		//deallocates argv as well as strdup's dynamic memory
@@ -259,11 +332,22 @@ void pipeExecutor(vector<string> &vect)
 		}
 		
 		//IO redirection
-		int fdIO;
-		if(in) { fdIO = open(argStr.c_str(), O_RDONLY);}
-		else if (out) { fdIO=open(argStr.c_str(),O_WRONLY | O_TRUNC | O_CREAT,S_IRUSR | S_IWUSR); }
-		else if (app) { fdIO=open(argStr.c_str(),O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);}
-		if(-1==fdIO) { perror("open"); };
+		int fdIO=0;
+		if(in)
+		{ 
+			fdIO = open(argStr.c_str(), O_RDONLY);
+			if(fdIO==-1) { perror("open"); }
+		}
+		else if (out)
+		{
+			fdIO=open(argStr.c_str(),O_WRONLY | O_TRUNC | O_CREAT,S_IRUSR | S_IWUSR);
+			if(fdIO==-1) { perror("open"); }
+		}
+		else if (app)
+		{
+			fdIO=open(argStr.c_str(),O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
+			if(-1==fdIO) { perror("open"); }
+		}
 		
 		//fork and attempt to execute using execvp
 		pid_t pid=fork();
@@ -310,10 +394,15 @@ void pipeExecutor(vector<string> &vect)
 		delete [] argv;
 	}
 	//once done with loop
-	for(int j=0;j<pipeCnt*2;++j) { close(fds[j]); }
+	for(int j=0;j<pipeCnt*2;++j)
+	{
+		if(-1==(close(fds[j])))
+		{ perror("close"); }
+	}
 	for(int j=0;j<=pipeCnt;++j)
 	{
-		wait(0);
+		if(-1==(wait(0)))
+		{ perror("wait"); }
 	}
 	
 	delete [] fds;
@@ -353,13 +442,26 @@ void cdExecutor(string &s)
 
 	if(v.size()==1)     //if command is just "cd", go to home dir
 	{
-		chdir(home); setenv("PWD",home,1); setenv("OLDPWD",curr,1);
+		if(-1==(chdir(home)))
+		{ perror("chdir"); } 
+		setenv("PWD",home,1); 
+		setenv("OLDPWD",curr,1);
 		return;
 	}
 	else if (v.at(1)==".") { return; } //do nothing, already in needed dir 
+	else if (v.at(1)=="/") 
+	{
+		const char*absPath="/";
+		if(-1==(chdir(absPath)))
+		{ perror("chdir"); }
+		setenv("PWD",absPath,1);
+		setenv("OLDPWD",curr,1);	
+
+	}
 	else if(v.at(1)=="-")  //switch current and past directory
 	{
-		chdir(past);
+		if(-1==(chdir(past)))
+		{ perror("chdir"); }
 		setenv("PWD",past,1); 
 		setenv("OLDPWD",curr,1);
 	}
@@ -373,9 +475,11 @@ void cdExecutor(string &s)
 		errno=0;
 		chdir(temp); 
 		if(errno==2)
-		{	cerr << "No such directory exists.\n";
+		{
+			perror("No such directory exists.");
 			setenv("OLDPWD",past,1); //revert back to past, reversing change
-			errno=0; return;
+			errno=0;
+			return;
 		}
 		else if (errno==0) { setenv("PWD",temp,1); } //continues change
 		else { perror("chdir"); }
@@ -402,7 +506,7 @@ void commandParser(vector<string> &v, string str)
 	toknizer parser(str,delim);
 	for(toknizer::iterator it=parser.begin();it!=parser.end();++it)
 	{
-		if(*it=="exit")
+		if(*it=="exit" && it==parser.begin())
 		{
 			exit(0);
 		}
@@ -551,6 +655,26 @@ bool isCD(string &s)
 	return false;
 }
 
+bool isFG(string &s)
+{
+	size_t pos=s.find("fg");
+	if(pos !=string::npos)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool isBG(string &s)
+{
+	size_t pos=s.find("bg");
+	if(pos !=string::npos)
+	{
+		return true;
+	}
+	return false;
+}
+
 bool validSymbol(string &str)
 {
 	if(str=="&&") { return true; }
@@ -568,6 +692,7 @@ void prompt()
 	string t="~";
 	char buffer[PATH_MAX];
 	char* cwd=getcwd(buffer, PATH_MAX);
+	if(cwd==NULL) { perror("getcwd"); }
 	char* home=getenv("HOME");
 	string cwdstr(cwd);
 	string homestr(home);
@@ -577,14 +702,58 @@ void prompt()
 		int sz=homestr.size();
 		cwdstr.replace(0,sz,t);
 	}
-	cout << cwdstr << " $ ";
+	
+	struct passwd *pw;
+	if(NULL==(pw=getpwuid(getuid())))
+	{ perror("getpwuid"); }
+	char *user=pw->pw_name;
+	char host[128];
+	if(-1==(gethostname(host,128)))
+	{
+		perror("gethostname");
+	}
+
+	cout << user << "@";
+	cout << host << ": ";;
+	cout << cwdstr;	
+
+	cout << " $ ";
 	return;
 }
 void handleSig(int signum) 
 {
-	if(0!=getpid()) //if a child
+	if(cid==0) //if a child
 	{
-		kill(getpid(),SIGINT);
+		if(-1==(kill(getpid(),SIGINT)))
+		{ perror("kill"); }
 	}
+	else
+	{
+		return;
+	}
+}
+
+void handleStop(int signum)
+{ 
+	if(cid==0)
+	{
+		if(-1==(kill(getpid(),SIGSTOP)))
+		{perror("kill"); }
+	}
+	else
+	{
+		stopped.push(cid);
+		cerr << "\nProcess [" << cid << "] stopped.\n";
+		return;
+	}
+}
+
+void handleChild(int signum)
+{
+	while(((waitpid(-1,NULL, WNOHANG)))>0)
+	{
+		;
+	}
+	return;
 
 }

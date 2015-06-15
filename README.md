@@ -13,6 +13,7 @@ Input/output redirection and piping are supported to a limited extent as outline
 
 
 ##Installation
+
 ```
 git clone https://github.com/cbarb005/rshell.git
 cd rshell
@@ -36,6 +37,16 @@ Piping and connectors are not simultaneously handled, so a command such as ```ls
 Multiple pipes as of this moment are not supported, and is a major bug in this program. 
 
 ```cd``` has a bug in which after a nonexistent directory passed in. 
-The program returns an error message as expected, but afterwards, attempts such as ```cd ..```,```cd /```, and  ```cd dir``` also return the same error, until the command ```cd -``` is used, thus restoring all the previous commands.
+The program returns an error message as expected, but afterwards, attempts such as ```cd ..``` and  ```cd dir``` also return the same error, until the command ```cd -``` is used, thus restoring all the previous commands.
 
-Unfortunately, ```^C``` signal not functional as of right now.
+After stopping a program with ^Z and resuming it with either `fg` or `bg`, or resuming and then ^C, it does not automatically return to the prompt; you must press enter.
+Sometimes, `fg` and `bg` break and the function hangs.
+This does not happen consistently.
+On its own, ^C works fine, but as mentioned above, may get stuck when used with `fg` or `bg`.
+
+For `ls`, any combination of `-l` and `-R` does not work. 
+They work fine on their own and each combined with `-a`.
+
+Occasionally, the colors on ls may mess up output.
+For this reason, colored output for ls is available by using the flag "-cc" to enable colors for a single execution of `ls`.
+
