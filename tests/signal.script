@@ -1,0 +1,94 @@
+Script started on Mon 15 Jun 2015 07:56:28 AM PDT
+~
+cbarb005@hammer $ cd CS100/rshell/src/
+~/CS100/rshell/src
+cbarb005@hammer $ ../bin/rshee[Kll
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ ./test
+#
+#
+#
+^Ccbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ ps
+  PID TTY          TIME CMD
+21771 pts/1    00:00:00 bash
+21772 pts/1    00:00:00 rshell
+21774 pts/1    00:00:00 ps
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ #signal cp  captured
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ ./test
+#
+#
+#
+^Z
+Process [21778] stopped.
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ fg
+#
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ #
+#
+^C
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ ps
+  PID TTY          TIME CMD
+21771 pts/1    00:00:00 bash
+21772 pts/1    00:00:00 rshell
+21780 pts/1    00:00:00 ps
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ ./test
+#
+#
+#
+#
+^Z
+Process [21782] stopped.
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ ps
+  PID TTY          TIME CMD
+21771 pts/1    00:00:00 bash
+21772 pts/1    00:00:00 rshell
+21782 pts/1    00:00:00 test
+21784 pts/1    00:00:00 ps
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ bg
+#
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ #
+#
+#
+^C
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ ps
+  PID TTY          TIME CMD
+21771 pts/1    00:00:00 bash
+21772 pts/1    00:00:00 rshell
+21786 pts/1    00:00:00 ps
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ #process stopped, brough  t ot    to forebrou    ground or background, then killed 
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ #testing si  cd now
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ #cd to parent
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ cd ..
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell $ cd ..
+cbarb005@hammer.cs.ucr.edu: ~/CS100 $ #cd down to grand  child
+cbarb005@hammer.cs.ucr.edu: ~/CS100 $ cd rshell/src
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ pwd
+/class/classes/cbarb005/CS100/rshell/src
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ #cd no parameters
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ cd
+cbarb005@hammer.cs.ucr.edu: ~ $ pwd
+/class/classes/cbarb005
+cbarb005@hammer.cs.ucr.edu: ~ $ cd -
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ #cd dash
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ cd -
+cbarb005@hammer.cs.ucr.edu: ~ $ pwd
+/class/classes/cbarb005
+cbarb005@hammer.cs.ucr.edu: ~ $ cd -
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ pwd
+/class/classes/cbarb005/CS100/rshell/src
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ #ccd    d absolute path
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ cd/  /
+cbarb005@hammer.cs.ucr.edu: / $ pwd
+/
+cbarb005@hammer.cs.ucr.edu: / $ cd -
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ pwd
+/class/classes/cbarb005/CS100/rshell/src
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ c #cd to same dirrec   ectory
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ cd .
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ pwd
+/class/classes/cbarb005/CS100/rshell/src
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ #done with tests?
+cbarb005@hammer.cs.ucr.edu: ~/CS100/rshell/src $ exit
+~/CS100/rshell/src
+cbarb005@hammer $ exit
+exit
+
+Script done on Mon 15 Jun 2015 08:00:53 AM PDT

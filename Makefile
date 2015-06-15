@@ -7,10 +7,14 @@ all: bin  rshell cp ls
 
 rshell: bin 
 	g++  $(FLAGS) src/rshell.cpp  -o  ./bin/rshell  
-cp: 
+
+cp: bin 
 	g++ $(FLAGS) src/cp.cpp -o ./bin/cp
-ls:
+
+
+ls: bin
 	g++ $(FLAGS) src/ls.cpp -o ./bin/ls
+
 bin:
 	[ ! -d bin ] && mkdir bin
 

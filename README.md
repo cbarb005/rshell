@@ -45,7 +45,8 @@ This does not happen consistently.
 On its own, ^C works fine, but as mentioned above, may get stuck when used with `fg` or `bg`.
 
 For `ls`, any combination of `-l` and `-R` does not work. 
-They work fine on their own and each combined with `-a`.
+They work fine on their own and each combined with `-a`, but `-R` doesn't play well with others. 
+Errors for `stat` may appear even if everything is output correctly.
 
 Occasionally, the colors on ls may mess up output.
 For this reason, colored output for ls is available by using the flag "-cc" to enable colors for a single execution of `ls`.

@@ -1,129 +1,281 @@
-Script started on Sat 02 May 2015 12:03:26 AM PDT
+Script started on Mon 15 Jun 2015 04:40:00 PM PDT
 ~
-cbarb005@hammer $ cs100
-[0;91m
-===============================================================================
-|                                                                             |
-| You have enabled settings specific for cs100.  Everything you do is being   |
-| recorded to measure your progress in the class.                             |
-|                                                                             |
-| Important commands for the class:                                           |
-|   * calcgrade.sh          displays a detailed breakdown of your grade       |
-|   * checksyscalls.sh      is your cpp file doing proper error checking?     |
-|   * typespeed             practice typing unix commands                     |
-|                                                                             |
-| Important commands for general C++ programming:                             |
-|   * make                  don't call g++ manually; let make do the work!    |
-|   * gdb                   the GNU debugger                                  |
-|   * valgrind              get rid of your memory leaks                      |
-|   * cppcheck              static analysis tool                              |
-|   * man                   find help about any syscall / terminal command    |
-|                                                                             |
-===============================================================================
-[0m
-[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~[0;95m [0;36m$[0m cd CS100/
-[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100[0;95m [0;36m$[0m cd rshell/
-[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell[0;95m (ls) [0;36m$[0m cd src
-[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell/src[0;95m (ls) [0;36m$[0m l[K#n[Kwill use ./a.out to execute
-[s%%%%%%%%%%[u[0;32mcbarb005[0;36m@[0;32mcs100[0;36m:[0;32m~/CS100/rshell/src[0;95m (ls) [0;36m$[0m exit
-exit
-~
-cbarb005@hammer $ [Acs100[K[K[K[K[Kcd[K[Kcat ls.ss[K[K[K[K[K[K[K[K[Kcd[K[Kls
-[0m[01;32ma.out[0m*  [01;34mDesktop[0m/    [01;31mlab03.tgz[0m        [01;34mPublic[0m/      tutor
-bw.cpp  [01;34mDocuments[0m/  [01;34mMusic[0m/           structs.cpp  [01;34mVideos[0m/
-[01;34mcs061[0m/  [01;34mDownloads[0m/  [01;34mold_vim_config[0m/  [01;34mTemplates[0m/   [01;34mWINDOWS[0m/
-[01;34mCS100[0m/  [01;34mfolder[0m/     [01;34mPictures[0m/        test.cpp
-[m~
-cbarb005@hammer $ cd CS`[K100/
-~/CS100
-cbarb005@hammer $ cd src[K[K[Krshell/
-~/CS100/rshell
-cbarb005@hammer $ cd src/
+cbarb005@hammer $ cd CS100/rshell/src/
 ~/CS100/rshell/src
-cbarb005@hammer $ ls[K[K./a.out -l
-total: 184
--rw------- 1 cbarb005 classes      0   4   1 23:57 ls.script
-drwx------ 2 cbarb005 classes   4096   4   1 23:54 fake
--rw------- 1 cbarb005 classes   4875   3  19 23:55 rshell.cpp
--rw------- 1 cbarb005 classes   6299   4   1 23:47 ls.cpp
--rw------- 1 cbarb005 classes   3077   3  27 17:57 cp.cpp
-drwx------ 2 cbarb005 classes   4096   4   1 23:45 testdir
--rw------- 1 cbarb005 classes   2698   3  27 17:27 Timer.h
--rwx------ 1 cbarb005 classes  59875   4   1 23:49 a.out
+cbarb005@hammer $ ./ls
+a.out               colorls             cp.cpp              fake                
+in                  in.txt              ls.cpp              ls-color.cpp        ls3.script          
+ls                  ls2.cpp             lstest.cpp          mv.cpp              out                 
+rshell.cpp          rm.cpp              rshell              sig                 sig.cpp             
+test                test.cpp            Timer.h             x.cpp               
 ~/CS100/rshell/src
-cbarb005@hammer $ ./a.out -a
-.                             ..                            ls.script                     fake                          rshell.cpp                    ls.cpp                        cp.cpp                        testdir                       Timer.h                       a.out                         .nfs000000000109dfdf00000060  
+cbarb005@hammer $ ./ls fac[Kke
+hello.txt        
 ~/CS100/rshell/src
-cbarb005@hammer $ ./a.out -R
-.:
-ls.script  fake  rshell.cpp  ls.cpp  cp.cpp  testdir  Timer.h  a.out  
-fake:
-
-testdir:
+cbarb005@hammer $ #directory as parameter
+~/CS100/rshell/src
+cbarb005@hammer $ ./ls fake
+hello.txt        
+~/CS100/rshell/src
+cbarb005@hammer $ ./ls -a [K[K[K[K[K[K[K[K#file as parameter
+~/CS100/rshell/src
+cbarb005@hammer $ ./ls #[Kin.txt [4h-[4l[4ha[4l[4h [4l
+in.txt        
+~/CS100/rshell/src
+cbarb005@hammer $ ./ls -a in.txt [1P[4hl[4l
+total: 0
+-rw------- 1 cbarb005 classes      3 Apr  17 23:27 in.txt
 
 ~/CS100/rshell/src
-cbarb005@hammer $ ./a.out -al
-total: 200
-drwx------ 4 cbarb005 classes   4096   4   1 23:57 .
-drwx------ 5 cbarb005 classes   4096   4   1 23:44 ..
--rw------- 1 cbarb005 classes      0   4   1 23:57 ls.script
-drwx------ 2 cbarb005 classes   4096   4   1 23:54 fake
--rw------- 1 cbarb005 classes   4875   3  19 23:55 rshell.cpp
--rw------- 1 cbarb005 classes   6299   4   1 23:47 ls.cpp
--rw------- 1 cbarb005 classes   3077   3  27 17:57 cp.cpp
-drwx------ 2 cbarb005 classes   4096   4   1 23:45 testdir
--rw------- 1 cbarb005 classes   2698   3  27 17:27 Timer.h
--rwx------ 1 cbarb005 classes  59875   4   1 23:49 a.out
--rw------- 1 cbarb005 classes      0   4   1 23:48 .nfs000000000109dfdf00000060
+cbarb005@hammer $ ./ls in.txt out
+in.txt        
+out        
 ~/CS100/rshell/src
-cbarb005@hammer $ -[K./a.out -al[K[KlR
-.:
-total: 184
--rw------- 1 cbarb005 classes      0   4   1 23:57 ls.script
-drwx------ 2 cbarb005 classes   4096   4   1 23:54 fake
--rw------- 1 cbarb005 classes   4875   3  19 23:55 rshell.cpp
--rw------- 1 cbarb005 classes   6299   4   1 23:47 ls.cpp
--rw------- 1 cbarb005 classes   3077   3  27 17:57 cp.cpp
-drwx------ 2 cbarb005 classes   4096   4   1 23:45 testdir
--rw------- 1 cbarb005 classes   2698   3  27 17:27 Timer.h
--rwx------ 1 cbarb005 classes  59875   4   1 23:49 a.out
-fake:
-total: 0
-testdir:
-total: 0
+cbarb005@hammer $ #multiplep[K parameters accepted
 ~/CS100/rshell/src
-cbarb005@hammer $ ./a.out -lR[K[KaR
-.:
-.                             ..                            ls.script                     fake                          rshell.cpp                    ls.cpp                        cp.cpp                        testdir                       Timer.h                       a.out                         .nfs000000000109dfdf00000060  
-fake:
-.  ..  
-testdir:
-.  ..  
+cbarb005@hammer $ ls [K[K[K./ls -a
+.                   ..                  a.out               colorls             
+cp.cpp              fake                in.txt              in                  ls.cpp              
+ls-color.cpp        ls3.script          ls                  ls2.cpp             lstest.cpp          
+mv.cpp              out                 rshell              rshell.cpp          rm.cpp              
+sig                 sig.cpp             test                test.cpp            Timer.h             
+x.cpp               
 ~/CS100/rshell/src
-cbarb005@hammer $ ./a.out -aRlR[K[KalR
+cbarb005@hammer $ ./ls -l
+total: 1312
+-rwx------ 1 cbarb005 classes  80596 May  15 13:55 a.out
+-rwx------ 1 cbarb005 classes  76893 May  15 08:10 colorls
+-rw------- 1 cbarb005 classes   3077 Mar  27 17:57 cp.cpp
+drwx------ 2 cbarb005 classes   4096 May  15 02:37 fake
+-rw------- 1 cbarb005 classes     12 Apr  17 22:27 in
+-rw------- 1 cbarb005 classes      3 Apr  17 23:27 in.txt
+-rw------- 1 cbarb005 classes   8655 May  15 14:01 ls.cpp
+-rw------- 1 cbarb005 classes   8608 May  15 13:38 ls-color.cpp
+-rw------- 1 cbarb005 classes      0 May  15 16:32 ls3.script
+-rwx------ 1 cbarb005 classes  76237 May  15 16:31 ls
+-rw------- 1 cbarb005 classes   8146 May   9 10:54 ls2.cpp
+-rw------- 1 cbarb005 classes   8579 May  15 03:47 lstest.cpp
+-rw------- 1 cbarb005 classes   1073 Apr  28 21:59 mv.cpp
+-rw------- 1 cbarb005 classes      0 Apr  17 23:19 out
+-rw------- 1 cbarb005 classes  16382 May  15 01:43 rshell.cpp
+-rw------- 1 cbarb005 classes   2556 May   9 02:58 rm.cpp
+-rwx------ 1 cbarb005 classes  75539 May  15 01:44 rshell
+-rwx------ 1 cbarb005 classes 218131 May  15 00:59 sig
+-rw------- 1 cbarb005 classes  15531 May  15 01:00 sig.cpp
+-rwx------ 1 cbarb005 classes   7971 May  14 18:53 test
+-rw------- 1 cbarb005 classes    317 May  14 18:53 test.cpp
+-rw------- 1 cbarb005 classes   2698 Mar  27 17:27 Timer.h
+-rw------- 1 cbarb005 classes    165 Apr  17 20:32 x.cpp
+
+~/CS100/rshell/src
+cbarb005@hammer $ ./ls -l[KR
 .:
-total: 200
-drwx------ 4 cbarb005 classes   4096   4   1 23:57 .
-drwx------ 5 cbarb005 classes   4096   4   1 23:44 ..
--rw------- 1 cbarb005 classes      0   4   1 23:57 ls.script
-drwx------ 2 cbarb005 classes   4096   4   1 23:54 fake
--rw------- 1 cbarb005 classes   4875   3  19 23:55 rshell.cpp
--rw------- 1 cbarb005 classes   6299   4   1 23:47 ls.cpp
--rw------- 1 cbarb005 classes   3077   3  27 17:57 cp.cpp
-drwx------ 2 cbarb005 classes   4096   4   1 23:45 testdir
--rw------- 1 cbarb005 classes   2698   3  27 17:27 Timer.h
--rwx------ 1 cbarb005 classes  59875   4   1 23:49 a.out
--rw------- 1 cbarb005 classes      0   4   1 23:48 .nfs000000000109dfdf00000060
-fake:
-total: 16
-drwx------ 4 cbarb005 classes   4096   4   1 23:57 .
-drwx------ 5 cbarb005 classes   4096   4   1 23:44 ..
-testdir:
-total: 16
-drwx------ 4 cbarb005 classes   4096   4   1 23:57 .
-drwx------ 5 cbarb005 classes   4096   4   1 23:44 ..
+a.out               colorls             cp.cpp              fake                
+in                  in.txt              ls.cpp              ls-color.cpp        ls3.script          
+ls                  ls2.cpp             lstest.cpp          mv.cpp              out                 
+rshell.cpp          rm.cpp              rshell              sig                 sig.cpp             
+test                test.cpp            Timer.h             x.cpp               
+./fake:
+hello.txt        
+~/CS100/rshell/src
+cbarb005@hammer $ #each flag works on own
+~/CS100/rshell/src
+cbarb005@hammer $ #each flag works on own[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C./ls -R[K[Kal
+total: 1328
+drwx------ 3 cbarb005 classes   4096 May  15 16:32 .
+drwx------ 6 cbarb005 classes   4096 May  15 14:04 ..
+-rwx------ 1 cbarb005 classes  80596 May  15 13:55 a.out
+-rwx------ 1 cbarb005 classes  76893 May  15 08:10 colorls
+-rw------- 1 cbarb005 classes   3077 Mar  27 17:57 cp.cpp
+drwx------ 2 cbarb005 classes   4096 May  15 02:37 fake
+-rw------- 1 cbarb005 classes      3 Apr  17 23:27 in.txt
+-rw------- 1 cbarb005 classes     12 Apr  17 22:27 in
+-rw------- 1 cbarb005 classes   8655 May  15 14:01 ls.cpp
+-rw------- 1 cbarb005 classes   8608 May  15 13:38 ls-color.cpp
+-rw------- 1 cbarb005 classes      0 May  15 16:32 ls3.script
+-rwx------ 1 cbarb005 classes  76237 May  15 16:31 ls
+-rw------- 1 cbarb005 classes   8146 May   9 10:54 ls2.cpp
+-rw------- 1 cbarb005 classes   8579 May  15 03:47 lstest.cpp
+-rw------- 1 cbarb005 classes   1073 Apr  28 21:59 mv.cpp
+-rw------- 1 cbarb005 classes      0 Apr  17 23:19 out
+-rwx------ 1 cbarb005 classes  75539 May  15 01:44 rshell
+-rw------- 1 cbarb005 classes  16382 May  15 01:43 rshell.cpp
+-rw------- 1 cbarb005 classes   2556 May   9 02:58 rm.cpp
+-rwx------ 1 cbarb005 classes 218131 May  15 00:59 sig
+-rw------- 1 cbarb005 classes  15531 May  15 01:00 sig.cpp
+-rwx------ 1 cbarb005 classes   7971 May  14 18:53 test
+-rw------- 1 cbarb005 classes    317 May  14 18:53 test.cpp
+-rw------- 1 cbarb005 classes   2698 Mar  27 17:27 Timer.h
+-rw------- 1 cbarb005 classes    165 Apr  17 20:32 x.cpp
+
+~/CS100/rshell/src
+cbarb005@hammer $ -al [K[K[K[K#[K./ls [K[K[K[K[K# as mentioned in readme, this combo works fine
+~/CS100/rshell/src
+cbarb005@hammer $ ./ls -aR
+.:
+.                   ..                  a.out               colorls             
+cp.cpp              fake                in.txt              in                  ls.cpp              
+ls-color.cpp        ls3.script          ls                  ls2.cpp             lstest.cpp          
+mv.cpp              out                 rshell              rshell.cpp          rm.cpp              
+sig                 sig.cpp             test                test.cpp            Timer.h             
+x.cpp               
+./fake:
+.                ..               hello.txt        
+~/CS100/rshell/src
+cbarb005@hammer $ -[K# as does this one above
+~/CS100/rshell/src
+cbarb005@hammer $ #but l and R do't[K[Kn't seeem [K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K./ls -lRalR
+.:
+total: 1328
+drwx------ 3 cbarb005 classes   4096 May  15 16:32 .
+drwx------ 6 cbarb005 classes   4096 May  15 14:04 ..
+-rwx------ 1 cbarb005 classes  80596 May  15 13:55 a.out
+-rwx------ 1 cbarb005 classes  76893 May  15 08:10 colorls
+-rw------- 1 cbarb005 classes   3077 Mar  27 17:57 cp.cpp
+drwx------ 2 cbarb005 classes   4096 May  15 02:37 fake
+-rw------- 1 cbarb005 classes      3 Apr  17 23:27 in.txt
+-rw------- 1 cbarb005 classes     12 Apr  17 22:27 in
+-rw------- 1 cbarb005 classes   8655 May  15 14:01 ls.cpp
+-rw------- 1 cbarb005 classes   8608 May  15 13:38 ls-color.cpp
+-rw------- 1 cbarb005 classes      0 May  15 16:32 ls3.script
+-rwx------ 1 cbarb005 classes  76237 May  15 16:31 ls
+-rw------- 1 cbarb005 classes   8146 May   9 10:54 ls2.cpp
+-rw------- 1 cbarb005 classes   8579 May  15 03:47 lstest.cpp
+-rw------- 1 cbarb005 classes   1073 Apr  28 21:59 mv.cpp
+-rw------- 1 cbarb005 classes      0 Apr  17 23:19 out
+-rwx------ 1 cbarb005 classes  75539 May  15 01:44 rshell
+-rw------- 1 cbarb005 classes  16382 May  15 01:43 rshell.cpp
+-rw------- 1 cbarb005 classes   2556 May   9 02:58 rm.cpp
+-rwx------ 1 cbarb005 classes 218131 May  15 00:59 sig
+-rw------- 1 cbarb005 classes  15531 May  15 01:00 sig.cpp
+-rwx------ 1 cbarb005 classes   7971 May  14 18:53 test
+-rw------- 1 cbarb005 classes    317 May  14 18:53 test.cpp
+-rw------- 1 cbarb005 classes   2698 Mar  27 17:27 Timer.h
+-rw------- 1 cbarb005 classes    165 Apr  17 20:32 x.cpp
+
+./fake:
+stat: No such file or directory
+total: 24
+drwx------ 3 cbarb005 classes   4096 May  15 16:32 .
+drwx------ 6 cbarb005 classes   4096 May  15 14:04 ..
+stat: No such file or directory
+drwx------ 6 cbarb005 classes   4096 May  15 14:04 hello.txt
+
+~/CS100/rshell/src
+cbarb005@hammer $ #mixing l and R though seems to give errors[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[Kp[Kis buggy as you can see
+~/CS100/rshell/src
+cbarb005@hammer $ #[K./ls -lR
+.:
+total: 1312
+-rwx------ 1 cbarb005 classes  80596 May  15 13:55 a.out
+-rwx------ 1 cbarb005 classes  76893 May  15 08:10 colorls
+-rw------- 1 cbarb005 classes   3077 Mar  27 17:57 cp.cpp
+drwx------ 2 cbarb005 classes   4096 May  15 02:37 fake
+-rw------- 1 cbarb005 classes     12 Apr  17 22:27 in
+-rw------- 1 cbarb005 classes      3 Apr  17 23:27 in.txt
+-rw------- 1 cbarb005 classes   8655 May  15 14:01 ls.cpp
+-rw------- 1 cbarb005 classes   8608 May  15 13:38 ls-color.cpp
+-rw------- 1 cbarb005 classes      0 May  15 16:32 ls3.script
+-rwx------ 1 cbarb005 classes  76237 May  15 16:31 ls
+-rw------- 1 cbarb005 classes   8146 May   9 10:54 ls2.cpp
+-rw------- 1 cbarb005 classes   8579 May  15 03:47 lstest.cpp
+-rw------- 1 cbarb005 classes   1073 Apr  28 21:59 mv.cpp
+-rw------- 1 cbarb005 classes      0 Apr  17 23:19 out
+-rw------- 1 cbarb005 classes  16382 May  15 01:43 rshell.cpp
+-rw------- 1 cbarb005 classes   2556 May   9 02:58 rm.cpp
+-rwx------ 1 cbarb005 classes  75539 May  15 01:44 rshell
+-rwx------ 1 cbarb005 classes 218131 May  15 00:59 sig
+-rw------- 1 cbarb005 classes  15531 May  15 01:00 sig.cpp
+-rwx------ 1 cbarb005 classes   7971 May  14 18:53 test
+-rw------- 1 cbarb005 classes    317 May  14 18:53 test.cpp
+-rw------- 1 cbarb005 classes   2698 Mar  27 17:27 Timer.h
+-rw------- 1 cbarb005 classes    165 Apr  17 20:32 x.cpp
+
+šê:
+opendir: No such file or directory
+~/CS100/rshell/src
+cbarb005@hammer $ #som[K[K[Kand can be really unpredictable
+~/CS100/rshell/src
+cbarb005@hammer $ #for color output, flag -cc can be used
+~/CS100/rshell/src
+cbarb005@hammer $ ./ls -cc
+[32ma.out               [0m[32mcolorls             [0mcp.cpp              [0m[34mfake                [0m
+in                  [0min.txt              [0mls.cpp              [0mls-color.cpp        [0mls3.script          [0m
+[32mls                  [0mls2.cpp             [0mlstest.cpp          [0mmv.cpp              [0mout                 [0m
+rshell.cpp          [0mrm.cpp              [0m[32mrshell              [0m[32msig                 [0msig.cpp             [0m
+[32mtest                [0mtest.cpp            [0mTimer.h             [0mx.cpp               [0m
+~/CS100/rshell/src
+cbarb005@hammer $ ./ls -cc[Cacc[C[C
+[100m[34m.                   [0m[100m[34m..                  [0m[32ma.out               [0m[32mcolorls             [0m
+cp.cpp              [0m[34mfake                [0min.txt              [0min                  [0mls.cpp              [0m
+ls-color.cpp        [0mls3.script          [0m[32mls                  [0mls2.cpp             [0mlstest.cpp          [0m
+mv.cpp              [0mout                 [0m[32mrshell              [0mrshell.cpp          [0mrm.cpp              [0m
+[32msig                 [0msig.cpp             [0m[32mtest                [0mtest.cpp            [0mTimer.h             [0m
+x.cpp               [0m
+~/CS100/rshell/src
+cbarb005@hammer $ ./ls -alcc
+total: 1328
+drwx------ 3 cbarb005 classes   4096 May  15 16:32 [100m[34m.[0m
+drwx------ 6 cbarb005 classes   4096 May  15 14:04 [100m[34m..[0m
+-rwx------ 1 cbarb005 classes  80596 May  15 13:55 [32ma.out[0m
+-rwx------ 1 cbarb005 classes  76893 May  15 08:10 [32mcolorls[0m
+-rw------- 1 cbarb005 classes   3077 Mar  27 17:57 cp.cpp[0m
+drwx------ 2 cbarb005 classes   4096 May  15 02:37 [34mfake[0m
+-rw------- 1 cbarb005 classes      3 Apr  17 23:27 in.txt[0m
+-rw------- 1 cbarb005 classes     12 Apr  17 22:27 in[0m
+-rw------- 1 cbarb005 classes   8655 May  15 14:01 ls.cpp[0m
+-rw------- 1 cbarb005 classes   8608 May  15 13:38 ls-color.cpp[0m
+-rw------- 1 cbarb005 classes      0 May  15 16:32 ls3.script[0m
+-rwx------ 1 cbarb005 classes  76237 May  15 16:31 [32mls[0m
+-rw------- 1 cbarb005 classes   8146 May   9 10:54 ls2.cpp[0m
+-rw------- 1 cbarb005 classes   8579 May  15 03:47 lstest.cpp[0m
+-rw------- 1 cbarb005 classes   1073 Apr  28 21:59 mv.cpp[0m
+-rw------- 1 cbarb005 classes      0 Apr  17 23:19 out[0m
+-rwx------ 1 cbarb005 classes  75539 May  15 01:44 [32mrshell[0m
+-rw------- 1 cbarb005 classes  16382 May  15 01:43 rshell.cpp[0m
+-rw------- 1 cbarb005 classes   2556 May   9 02:58 rm.cpp[0m
+-rwx------ 1 cbarb005 classes 218131 May  15 00:59 [32msig[0m
+-rw------- 1 cbarb005 classes  15531 May  15 01:00 sig.cpp[0m
+-rwx------ 1 cbarb005 classes   7971 May  14 18:53 [32mtest[0m
+-rw------- 1 cbarb005 classes    317 May  14 18:53 test.cpp[0m
+-rw------- 1 cbarb005 classes   2698 Mar  27 17:27 Timer.h[0m
+-rw------- 1 cbarb005 classes    165 Apr  17 20:32 x.cpp[0m
+
+~/CS100/rshell/src
+cbarb005@hammer $ #works with others just fine[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K./ls -Rcc
+.:
+[32ma.out               [0m[32mcolorls             [0mcp.cpp              [0m[34mfake                [0m
+in                  [0min.txt              [0mls.cpp              [0mls-color.cpp        [0mls3.script          [0m
+[32mls                  [0mls2.cpp             [0mlstest.cpp          [0mmv.cpp              [0mout                 [0m
+rshell.cpp          [0mrm.cpp              [0m[32mrshell              [0m[32msig                 [0msig.cpp             [0m
+[32mtest                [0mtest.cpp            [0mTimer.h             [0mx.cpp               [0m
+./fake:
+stat: No such file or directory
+stat: No such file or directory
+hello.txt        [0m
+readdir: No such file or directory
+~/CS100/rshell/src
+cbarb005@hammer $ #b[Kbugg[Ks seem to be associated with[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K# [K -R buggy when using others still, [K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[Kbuggy with -R but still technically works[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K
+~/CS100/rshell/src
+cbarb005@hammer $ # buggy with -R[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K./ls -Rccalcc[K[K[K[KR
+.:
+a.out               colorls             cp.cpp              fake                
+in                  in.txt              ls.cpp              ls-color.cpp        ls3.script          
+ls                  ls2.cpp             lstest.cpp          mv.cpp              out                 
+rshell.cpp          rm.cpp              rshell              sig                 sig.cpp             
+test                test.cpp            Timer.h             x.cpp               
+./fake:
+hello.txt        
+~/CS100/rshell/src
+cbarb005@hammer $ # -r[K[Kend of thest[K[K[K[Kesting script
+~/CS100/rshell/src
+cbarb005@hammer $ end
+bash: end: command not found
+~/CS100/rshell/src
+cbarb005@hammer $ end
+bash: end: command not found
 ~/CS100/rshell/src
 cbarb005@hammer $ exit
 exit
 
-Script done on Sat 02 May 2015 12:05:55 AM PDT
+Script done on Mon 15 Jun 2015 04:47:30 PM PDT
